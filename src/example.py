@@ -4,7 +4,7 @@ import policies
 env = gym.make("CartPole-v1", render_mode='human')
 observation, _ = env.reset() # 546 gives full score with rule 81
 
-rule = 81 # 97
+rule = 81
 score = 0
 
 for _ in range(500):

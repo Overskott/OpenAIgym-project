@@ -1,4 +1,5 @@
 import CA
+import random
 
 def right_control(observation):
     return 1
@@ -31,7 +32,9 @@ def voter_control(observation):
     for i in state:
         sum += int(i)
     print(sum)
-    if sum/4 < 1/2:
-        return 1
-    else:
+    if sum/4 == 1/2:
+        return random.randint(0, 1)
+    elif sum/4 > 1/2:
         return 0
+    else:
+        return 1

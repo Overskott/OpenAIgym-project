@@ -16,7 +16,7 @@ for run in range(258):
     observation, _ = env.reset(seed=546)
 
     for _ in range(500):
-        action = policies.simple_ca(observation, rule)  # User-defined policy function
+        action = policies.voter_control(observation)  # User-defined policy function
         observation, reward, terminated, truncated, _ = env.step(action)
 
         score += reward
