@@ -1,5 +1,6 @@
 import CA
 import random
+import numpy as np
 
 def right_control(observation):
     return 1
@@ -24,6 +25,24 @@ def simple_ca(observation, rule):
     action = CA.increment_state(state, rule)
 
     return action
+
+def spread_out(observations, rule, size=20):
+    obser = CA.observables_to_binary(observations)
+
+    new_state = [0 for _ in range(size)]
+
+    for i in range(len(obser)):
+
+        new_state[i*(size >> len(obser))] = obser[i]
+
+    new_state = [str(x) for x in new_state]
+    
+    for run in range(size):
+        new_state = CA.increment_ca(new_state, rule)
+
+    return new_state[size >> 2]
+
+
 
 
 def voter_control(observation):

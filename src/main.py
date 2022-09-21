@@ -2,21 +2,23 @@
 #  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
 #
 #
+import random
+
 import gym
 import policies
 
 env = gym.make("CartPole-v1")
-
-run = 0
 results = [0, 0, 0]
+seed = random.randint(0, 10000)
 
 for run in range(258):
     score = 0
     rule = run
-    observation, _ = env.reset(seed=546)
+
+    observation, _ = env.reset()
 
     for _ in range(500):
-        action = policies.voter_control(observation)  # User-defined policy function
+        action = policies.spread_out(observation, rule)  # User-defined policy function
         observation, reward, terminated, truncated, _ = env.step(action)
 
         score += reward
@@ -39,4 +41,4 @@ for run in range(258):
         results[1] = score
         results[2] = rule
 
-print(f"Best run was run #{results[0]} with the score {results[1]} using rule {results[2]}")
+print(f"Best run was run #{results[0]} with the score {results[1]} using rule {results[2]} with seed {seed}")

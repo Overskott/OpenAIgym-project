@@ -8,7 +8,7 @@ def initialize_random_ca(size):
 
 
 def random_ca_rule():
-    return random.randint(0, 257)
+    return random.randint(0, 255)
 
 
 def increment_ca(state, rule):
