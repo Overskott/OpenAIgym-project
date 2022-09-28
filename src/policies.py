@@ -1,3 +1,7 @@
+import stat
+
+import matplotlib.pyplot as plt
+
 import CA
 import random
 import numpy as np
@@ -21,27 +25,43 @@ def naive_control(observation):
 
 
 def simple_ca(observation, rule):
-    state = CA.observables_to_binary(observation)[1:]
-    action = CA.increment_state(state, rule)
+    obs = CA.observables_to_binary(observation)[1:]
+    ca = CA.OneDimCA(state=obs)
+    ca.increment_ca()
+    action = ca.state[1]
 
     return action
 
 def spread_out(observations, rule, size=20):
-    obser = CA.observables_to_binary(observations)
+    obs = CA.observables_to_binary(observations)
+    state = np.zeros(size, dtype='i4')
+    distance = int(size/len(obs))
 
-    new_state = [0 for _ in range(size)]
+    for i in range(len(obs)):
+        state[i*distance] = obs[i]
 
-    for i in range(len(obser)):
+    ca = CA.OneDimCA(state=state, rule=rule)
 
-        new_state[i*(size >> len(obser))] = obser[i]
+    plot_list = []
+    for i in range(size):
+        plot_list.append(ca.state)
+        ca.increment_ca()
 
-    new_state = [str(x) for x in new_state]
-    
-    for run in range(size):
-        new_state = CA.increment_ca(new_state, rule)
+    sum = 0
+    for value in ca.state:
+        sum += value
 
-    return new_state[size >> 2]
+    if sum/len(ca.state) < 0.5:
+        action = 0
+    else:
+        action = 1
 
+    plt.imshow(plot_list, cmap='gray')
+    plt.show()
+    return action
+
+def funnel(observation, rule, size=10):
+    pass
 
 def voter_control(observation):
     state = CA.observables_to_binary(observation)

@@ -5,114 +5,75 @@ import numpy as np
 def random_ca_rule(self):
     return random.randint(0, 255)
 
-
-
 def observables_to_binary(observables):
-    position = observables[0]
-    velocity = observables[1]
-    angle = observables[2]
-    angle_mom = observables[3]
-
-    state = ""
-    if position >= 0:
-        state += '1'
-    else:
-        state += '0'
-
-    if velocity >= 0:
-        state += '1'
-    else:
-        state += '0'
-
-    if angle >= 0:
-        state += '1'
-    else:
-        state += '0'
-
-    if angle_mom >= 0:
-        state += '1'
-    else:
-        state += '0'
-
-    return state
-
-
-def print_state(state):
-    string = ""
-    for bit in state:
-        if bit == 1:
-            string += "@"
+    """Observables = [position, velocity, angle, angular_momentum]"""
+    state = np.zeros(len(observables))
+    for i, observable in enumerate(observables):
+        if observable >= 0:
+            state[i] = 1
         else:
-            string += "_"
-    print(string)
+            state[i] = 0
+    return state
 
 class OneDimCA(object):
 
-    def __init__(self, size, rule):
-        self.state = self.State(size)
-        self.rule = rule
+    def __init__(self, state=None, rule=None, stride=1, neighbourhood=3):
 
-    class State(np.ndarray):
+        if state is None:
+            self.state = np.random.randint(0, 2, dtype='i1', size=10)
+        else:
+            self.state = state
 
-        def __new__(cls, size):
-            random_nparray = np.random.randint(0, 2, size)
-            return random_nparray
+        if rule is None:
+            self.rule = [x for x in format(90, '08b')]
+        else:
+            self.rule = [x for x in format(rule, '08b')]
 
-        def __init__(self, size):
-            self.array_size = size
-            # self.state = self.generate_random_state()
-            super().__init__(self)
+        self.size = len(self.state)
 
-        def __str__(self):
-            return str(self)
+    def __str__(self):
+        return str(self.state)
 
-        def generate_random_state(self):
-            state = np.random.randint(0, 2, dtype='i1', size=self.size)
-            return state
+    def cell_time_step(self, cell_index, boundary_condition='Periodic'):
+        neighborhood = ""
 
-        def cell_time_step(self, cell_index, rule, boundary_condition='None'):
+        if boundary_condition == 'Periodic':
+            neighborhood = self.get_three_cell_neighbourhood(cell_index)
+            nh_binary_value = int(neighborhood, 2)
+            cell_new_value = int(self.rule[nh_binary_value])
+        elif boundary_condition == 'Fixed':
+            pass
+        else:
+            pass
 
-            rule_binary_list = [x for x in format(rule, '08b')]
-            neighborhood = ""
+        return cell_new_value
 
-            if boundary_condition == 'Periodic':
-                pass
-            elif boundary_condition == 'Fixed':
-                pass
-            elif boundary_condition == 'Cut-off':
-                pass
-            else:
-                neighborhood = self.get_three_cell_neighbourhood()
+    def get_three_cell_neighbourhood(self, cell_index: int) -> str:
 
-                nh_binary_value = int(neighborhood, 2)
-                cell_new_value = int(rule_binary_list[nh_binary_value])
+        neighborhood = ""
+        neighborhood += str(self.state[cell_index - 1])
+        neighborhood += str(self.state[cell_index])
+        neighborhood += str(self.state[(cell_index + 1) % self.size])
 
-            self[cell_index] = cell_new_value
+        return neighborhood
 
-        def get_three_cell_neighbourhood(self, cell_index):
+    def get_five_cell_neighbourhood(self, cell_index):
 
-            neighborhood = ""
-            neighborhood += str(np.mod(cell_index - (3 >> 1), self.size))
-            neighborhood += str(np.mod(cell_index, self.size))
-            neighborhood += str(np.mod(cell_index + (3 >> 1), self.size))
+        neighborhood = ""
+        neighborhood += str(np.mod(cell_index - (5 >> 1), self.size))
+        neighborhood += str(np.mod(cell_index - (5 >> 2), self.size))
+        neighborhood += str(np.mod(cell_index, self.size))
+        neighborhood += str(np.mod(cell_index + (5 >> 2), self.size))
+        neighborhood += str(np.mod(cell_index + (5 >> 1), self.size))
 
-            return neighborhood
+        return neighborhood
 
-        def get_five_cell_neighbourhood(self, cell_index):
+    def increment_ca(self):
+        new_state = np.zeros(self.size, dtype='i4')
+        for i in range(self.size):
+            new_state[i] = self.cell_time_step(i)
 
-            neighborhood = ""
-            neighborhood += str(np.mod(cell_index - (5 >> 1), self.size))
-            neighborhood += str(np.mod(cell_index - (5 >> 2), self.size))
-            neighborhood += str(np.mod(cell_index, self.size))
-            neighborhood += str(np.mod(cell_index + (5 >> 2), self.size))
-            neighborhood += str(np.mod(cell_index + (5 >> 1), self.size))
-
-            return neighborhood
-
-        def increment_ca(self, rule):
-            for i in range(self.size):
-                self.cell_time_step(i, rule)
-
+        self.state = new_state
 
 
 
