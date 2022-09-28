@@ -43,8 +43,6 @@ def spread_out(observations, rule, size=20):
     return new_state[size >> 2]
 
 
-
-
 def voter_control(observation):
     state = CA.observables_to_binary(observation)
     sum = 0

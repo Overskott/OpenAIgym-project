@@ -2,9 +2,9 @@ import gym
 import policies
 
 env = gym.make("CartPole-v1", render_mode='human')
-observation, _ = env.reset()
+observation, _ = env.reset(seed=2719)
 
-rule = 106
+rule = 28
 score = 0
 
 for _ in range(500):
