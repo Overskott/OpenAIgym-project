@@ -11,7 +11,7 @@ observation, _ = env.reset(seed=seed)
 
 for _ in range(500):
     # Best run was run #112 with the score 500.0 using rule 112 with seed 1921
-    action = policies.spread_out(observation, rule)  # 546 gives full score with rule 81
+    action = policies.simple_ca(observation, rule)  # 546 gives full score with rule 81
     #action = policies.spread_out(observation, rule)  # Run 106, score 144.0, rule 106 seed 1707 size 100
                                                      # Best run was run #28 with the score 261.0 using rule 28 with seed 2719
 

@@ -2,25 +2,22 @@ import random
 import numpy as np
 
 
-def random_ca_rule(self):
-    return random.randint(0, 255)
+class Genotype(object):
 
-def observables_to_binary(observables):
-    """Observables = [position, velocity, angle, angular_momentum]"""
-    state = np.zeros(len(observables))
-    for i, observable in enumerate(observables):
-        if observable >= 0:
-            state[i] = 1
-        else:
-            state[i] = 0
-    return state
+    def __int__(self):
+        pass
 
-class OneDimCA(object):
 
-    def __init__(self, state=None, rule=None, stride=1, neighbourhood=3):
+class CellularAutomaton1D(Genotype):
+
+    def __init__(self, state=None,
+                 rule=None,
+                 iterations=10,
+                 stride=1,
+                 neighbourhood=3):
 
         if state is None:
-            self.state = np.random.randint(0, 2, dtype='i1', size=10)
+            self.state = np.random.randint(0, 2, dtype='i4', size=10)
         else:
             self.state = state
 
@@ -30,13 +27,19 @@ class OneDimCA(object):
             self.rule = [x for x in format(rule, '08b')]
 
         self.size = len(self.state)
+        self.iterations = iterations
+        self.history = []
 
     def __str__(self):
         return str(self.state)
 
+    def run(self):
+        for i in range(self.iterations):
+            self.increment_ca()
+            self.history.append(self.state)
+
     def cell_time_step(self, cell_index, boundary_condition='Periodic'):
         neighborhood = ""
-
         if boundary_condition == 'Periodic':
             neighborhood = self.get_three_cell_neighbourhood(cell_index)
             nh_binary_value = int(neighborhood, 2)
@@ -67,6 +70,9 @@ class OneDimCA(object):
         neighborhood += str(np.mod(cell_index + (5 >> 1), self.size))
 
         return neighborhood
+
+    def get_history(self):
+        return self.history
 
     def increment_ca(self):
         new_state = np.zeros(self.size, dtype='i4')

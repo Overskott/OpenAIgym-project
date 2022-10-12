@@ -18,7 +18,7 @@ for run in range(258):
     observation, _ = env.reset(seed=seed)
 
     for _ in range(500):
-        action = policies.spread_out(observation, rule)  # User-defined policy function
+        action = policies.spread_out(observation, rule=rule)  # User-defined policy function
         observation, reward, terminated, truncated, _ = env.step(action)
 
         score += reward

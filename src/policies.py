@@ -2,7 +2,7 @@ import stat
 
 import matplotlib.pyplot as plt
 
-import CA
+import genotypes
 import random
 import numpy as np
 
@@ -26,13 +26,13 @@ def naive_control(observation):
 
 def simple_ca(observation, rule):
     obs = CA.observables_to_binary(observation)[1:]
-    ca = CA.OneDimCA(state=obs)
+    ca = CA.CellularAutomaton1D(state=obs)
     ca.increment_ca()
     action = ca.state[1]
 
     return action
 
-def spread_out(observations, rule, size=20):
+def spread_out(observations, rule, size=40):
     obs = CA.observables_to_binary(observations)
     state = np.zeros(size, dtype='i4')
     distance = int(size/len(obs))
@@ -40,24 +40,20 @@ def spread_out(observations, rule, size=20):
     for i in range(len(obs)):
         state[i*distance] = obs[i]
 
-    ca = CA.OneDimCA(state=state, rule=rule)
+    ca = CA.CellularAutomaton1D(state=state, rule=rule, iterations=size)
 
-    plot_list = []
-    for i in range(size):
-        plot_list.append(ca.state)
-        ca.increment_ca()
+    ca.run()
 
     sum = 0
+
     for value in ca.state:
         sum += value
 
-    if sum/len(ca.state) < 0.5:
+
+    if sum < int(size/2):
         action = 0
     else:
         action = 1
-
-    plt.imshow(plot_list, cmap='gray')
-    plt.show()
     return action
 
 def funnel(observation, rule, size=10):
