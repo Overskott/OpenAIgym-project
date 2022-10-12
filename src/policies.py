@@ -1,10 +1,9 @@
-import stat
 
+from genotypes import CellularAutomaton1D
+import utils
+import numpy as np
 import matplotlib.pyplot as plt
 
-import genotypes
-import random
-import numpy as np
 
 def right_control(observation):
     return 1
@@ -24,13 +23,35 @@ def naive_control(observation):
         return 0
 
 
-def simple_ca(observation, rule):
-    obs = CA.observables_to_binary(observation)[1:]
-    ca = CA.CellularAutomaton1D(state=obs)
-    ca.increment_ca()
-    action = ca.state[1]
+def simple_ca(observation, model: CellularAutomaton1D):
+    obs = utils.observables_to_binary(observation)[1:]
+    configuration = np.zeros(model.size)
+
+    for i, value in enumerate(obs):
+        configuration[i*len(obs)] = value
+
+    ca = model
+    ca.configuration = configuration
+    ca.run_time_evolution(ca.size)
+    action = voting_result(ca.configuration)
 
     return action
+
+
+def voting_result(array: np.ndarray):
+    result = int(np.round(sum(array)/len(array)))
+    print(result)
+    return result
+
+
+def voting_rule(observations, rule) -> int:
+    configuration = utils.observables_to_binary(observations)
+    ca = CellularAutomaton1D(configuration, rule,)
+    ca.run_time_evolution(4)
+    action = int(np.round(sum(configuration/len(configuration))))
+
+    return action
+
 
 def spread_out(observations, rule, size=40):
     obs = CA.observables_to_binary(observations)
@@ -40,15 +61,13 @@ def spread_out(observations, rule, size=40):
     for i in range(len(obs)):
         state[i*distance] = obs[i]
 
-    ca = CA.CellularAutomaton1D(state=state, rule=rule, iterations=size)
+    ca = CA.CellularAutomaton1D(configuration=state, rule=rule, iterations=size)
 
-    ca.run()
-
+    ca.run_time_evolution()
     sum = 0
 
-    for value in ca.state:
+    for value in ca.configuration:
         sum += value
-
 
     if sum < int(size/2):
         action = 0
@@ -58,16 +77,3 @@ def spread_out(observations, rule, size=40):
 
 def funnel(observation, rule, size=10):
     pass
-
-def voter_control(observation):
-    state = CA.observables_to_binary(observation)
-    sum = 0
-    for i in state:
-        sum += int(i)
-    print(sum)
-    if sum/4 == 1/2:
-        return random.randint(0, 1)
-    elif sum/4 > 1/2:
-        return 0
-    else:
-        return 1

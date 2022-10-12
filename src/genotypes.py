@@ -1,49 +1,74 @@
 import random
+from typing import List
+import copy
 import numpy as np
+from abc import ABC, abstractmethod
 
 
-class Genotype(object):
+class Genotype(ABC):
 
-    def __int__(self):
+    @abstractmethod
+    def run_time_evolution(self, steps):
+        pass
+
+    @abstractmethod
+    def get_history(self):
         pass
 
 
 class CellularAutomaton1D(Genotype):
 
-    def __init__(self, state=None,
-                 rule=None,
-                 iterations=10,
-                 stride=1,
-                 neighbourhood=3):
+    def __init__(self, configuration: np.ndarray,
+                 rule: int,
+                 hood_size=3):
 
-        if state is None:
-            self.state = np.random.randint(0, 2, dtype='i4', size=10)
-        else:
-            self.state = state
-
-        if rule is None:
-            self.rule = [x for x in format(90, '08b')]
-        else:
-            self.rule = [x for x in format(rule, '08b')]
-
-        self.size = len(self.state)
-        self.iterations = iterations
+        self.hood_size = hood_size
+        self.configuration = configuration
+        self._rule = rule
+        self._size = len(self.configuration)
         self.history = []
 
     def __str__(self):
-        return str(self.state)
+        return str(self.configuration)
 
-    def run(self):
-        for i in range(self.iterations):
-            self.increment_ca()
-            self.history.append(self.state)
+    def __format_rule(self, rule: int) -> List[str]:
+        rule_string = [x for x in format(rule, f"0{2 ** self.hood_size}b")]
+
+        return rule_string
+
+    def get_history(self):
+        return self.history
+
+    @property
+    def configuration(self) -> np.ndarray:
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, config: np.ndarray):
+        self._configuration = config
+        self.size = len(self.configuration)
+
+    @property
+    def rule(self):
+        return self._rule
+
+    @rule.setter
+    def rule(self, rule: int):
+        self._rule = rule
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, size):
+        self._size = size
 
     def cell_time_step(self, cell_index, boundary_condition='Periodic'):
-        neighborhood = ""
+
         if boundary_condition == 'Periodic':
-            neighborhood = self.get_three_cell_neighbourhood(cell_index)
-            nh_binary_value = int(neighborhood, 2)
-            cell_new_value = int(self.rule[nh_binary_value])
+            neighborhood = self.__get_cell_neighbourhood(cell_index)
+            cell_new_value = self.__apply_rule(neighborhood)
         elif boundary_condition == 'Fixed':
             pass
         else:
@@ -51,36 +76,52 @@ class CellularAutomaton1D(Genotype):
 
         return cell_new_value
 
-    def get_three_cell_neighbourhood(self, cell_index: int) -> str:
+    def configuration_time_step(self):
+        new_state = copy.copy(self.configuration)
 
-        neighborhood = ""
-        neighborhood += str(self.state[cell_index - 1])
-        neighborhood += str(self.state[cell_index])
-        neighborhood += str(self.state[(cell_index + 1) % self.size])
-
-        return neighborhood
-
-    def get_five_cell_neighbourhood(self, cell_index):
-
-        neighborhood = ""
-        neighborhood += str(np.mod(cell_index - (5 >> 1), self.size))
-        neighborhood += str(np.mod(cell_index - (5 >> 2), self.size))
-        neighborhood += str(np.mod(cell_index, self.size))
-        neighborhood += str(np.mod(cell_index + (5 >> 2), self.size))
-        neighborhood += str(np.mod(cell_index + (5 >> 1), self.size))
-
-        return neighborhood
-
-    def get_history(self):
-        return self.history
-
-    def increment_ca(self):
-        new_state = np.zeros(self.size, dtype='i4')
-        for i in range(self.size):
+        for i in range(self._size):
             new_state[i] = self.cell_time_step(i)
 
-        self.state = new_state
+        self.configuration = new_state
 
+    def run_time_evolution(self, steps):
+        for i in range(steps):
+            self.configuration_time_step()
+            self.history.append(self.configuration)
 
+    def __apply_rule(self, neighborhood):
 
+        hood_binary_value = int(neighborhood, 2)
+        binary_rule = self.__format_rule(self.rule)
+        new_cell_value = int(binary_rule[hood_binary_value])
+
+        return new_cell_value
+
+    def __get_cell_neighbourhood(self, cell_index: int) -> str:
+        neighborhood = ""
+
+        ca_array = np.concatenate((self.configuration[-self.hood_size:],
+                                   self.configuration,
+                                   self.configuration[:self.hood_size]))
+
+        start_cell = cell_index + self.hood_size
+        end_cell = (start_cell + self.hood_size)
+
+        hood_range = ca_array[start_cell: end_cell]
+
+        for cell in hood_range:
+            neighborhood += str(int(cell))
+
+        return neighborhood
+
+    def generate_gene(self) -> List[any]:
+        gene_list = [self.configuration, self.rule, self.hood_size]
+
+        return gene_list
+
+    def parse_gene(self, gene):
+        self.configuration = gene[0]
+        self.rule = gene[0]
+        self.hood_size = gene[2]
+        pass
 

@@ -1,19 +1,15 @@
-from genotypes import CellularAutomaton1D
+from genotypes import CellularAutomaton1D, Genotype
 import numpy as np
 import matplotlib.pyplot as plt
 
-size = 500
+size = 100
 state = np.random.randint(0, 2, dtype='i1', size=size)
+ca = CellularAutomaton1D(configuration=state, rule=90, hood_size=3)
 
-ca = CellularAutomaton1D(state=state, iterations=size)
-steps = size
+ca.run_time_evolution(size)
 
-print(f"rule: {ca.rule}")
-plot_list = []
-
-ca.run()
-
-print(ca.get_history)
 plt.imshow(ca.get_history(), cmap='gray')
 plt.show()
+
+#TODO asyncronous CA (50% of cells are updated)
 
