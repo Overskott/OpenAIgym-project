@@ -5,8 +5,13 @@ import gym
 
 from genotypes import Genotype, CellularAutomaton1D
 
-def random_ca_rule():
-    return random.randint(0, 255)
+
+def binary_to_int(array: np.ndarray):
+    """Converting a numpy array with binary values to decimal integer"""
+    binary_string = ''.join(f"{binary}" for binary in array)
+    number = int(binary_string, 2)
+
+    return number
 
 
 def observables_to_binary(observables):
