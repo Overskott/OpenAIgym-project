@@ -1,15 +1,16 @@
 from genotypes import CellularAutomaton1D, Genotype
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import binary_to_int
+import utils
 
-size = 10
+size = 250
+hood_size = 3
+rule = utils.int_to_binary(90, 2**hood_size)
 state = np.random.randint(0, 2, dtype='i1', size=size)
-ca = CellularAutomaton1D(configuration=state, rule=90, hood_size=3)
+ca = CellularAutomaton1D(configuration=state, rule=rule, hood_size=hood_size)
 
 ca.run_time_evolution(size)
 
-print(binary_to_int(state))
 plt.imshow(ca.get_history(), cmap='gray')
 plt.show()
 

@@ -3,7 +3,7 @@ import numpy as np
 import policies
 import gym
 
-from genotypes import Genotype, CellularAutomaton1D
+from genotypes import CellularAutomaton1D
 
 
 def binary_to_int(array: np.ndarray):
@@ -12,6 +12,14 @@ def binary_to_int(array: np.ndarray):
     number = int(binary_string, 2)
 
     return number
+
+
+def int_to_binary(value: int, length: int) -> np.ndarray:
+    """ Converting a decimal integer to a numpy array with binary values"""
+    binary_string = format(value, f"0{length}b")
+    binary_array = np.array([int(x) for x in binary_string])
+
+    return binary_array
 
 
 def observables_to_binary(observables):

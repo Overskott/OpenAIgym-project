@@ -1,8 +1,9 @@
 import gym
 import policies
+import utils
 
-
-rule = 71
+rule = utils.int_to_binary(90)
+print(rule)
 score = 0
 seed = 5354
 

@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import policies
 from genotypes import CellularAutomaton1D
+import utils
 
 env = gym.make("CartPole-v1")
 results = [0, 0, 0]
@@ -16,7 +17,7 @@ seed = random.randint(0, 10000)
 
 for run in range(258):
     score = 0
-    rule = 90
+    rule = utils.int_to_binary(90)
 
     observation, _ = env.reset(seed=seed)
 

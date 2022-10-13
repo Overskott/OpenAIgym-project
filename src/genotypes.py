@@ -1,8 +1,9 @@
-import random
+
 from typing import List
 import copy
 import numpy as np
 from abc import ABC, abstractmethod
+
 
 
 class Genotype(ABC):
@@ -19,7 +20,7 @@ class Genotype(ABC):
 class CellularAutomaton1D(Genotype):
 
     def __init__(self, configuration: np.ndarray,
-                 rule: int,
+                 rule: np.ndarray,
                  hood_size=3):
 
         self.hood_size = hood_size
@@ -64,10 +65,23 @@ class CellularAutomaton1D(Genotype):
     def size(self, size):
         self._size = size
 
-    def cell_time_step(self, cell_index, boundary_condition='Periodic'):
+    def run_time_evolution(self, steps):
+        for i in range(steps):
+            self.history.append(self.configuration)
+            self.configuration_time_step()
 
+    def configuration_time_step(self):
+        new_state = copy.deepcopy(self.configuration)
+
+        for i in range(self._size):
+            new_state[i] = self.cell_time_step(i)
+
+        self.configuration = new_state
+
+    def cell_time_step(self, cell_index, boundary_condition='Periodic'):
         if boundary_condition == 'Periodic':
             neighborhood = self.__get_cell_neighbourhood(cell_index)
+
             cell_new_value = self.__apply_rule(neighborhood)
         elif boundary_condition == 'Fixed':
             pass
@@ -76,24 +90,9 @@ class CellularAutomaton1D(Genotype):
 
         return cell_new_value
 
-    def configuration_time_step(self):
-        new_state = copy.copy(self.configuration)
-
-        for i in range(self._size):
-            new_state[i] = self.cell_time_step(i)
-
-        self.configuration = new_state
-
-    def run_time_evolution(self, steps):
-        for i in range(steps):
-            self.configuration_time_step()
-            self.history.append(self.configuration)
-
     def __apply_rule(self, neighborhood):
-
         hood_binary_value = int(neighborhood, 2)
-        binary_rule = self.__format_rule(self.rule)
-        new_cell_value = int(binary_rule[hood_binary_value])
+        new_cell_value = int(self.rule[hood_binary_value])
 
         return new_cell_value
 
@@ -104,8 +103,8 @@ class CellularAutomaton1D(Genotype):
                                    self.configuration,
                                    self.configuration[:self.hood_size]))
 
-        start_cell = cell_index + self.hood_size
-        end_cell = (start_cell + self.hood_size)
+        start_cell = cell_index + self.hood_size - 1
+        end_cell = start_cell + self.hood_size
 
         hood_range = ca_array[start_cell: end_cell]
 
