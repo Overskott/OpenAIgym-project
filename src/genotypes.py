@@ -19,19 +19,27 @@ class Genotype(ABC):
 
 class CellularAutomaton1D(Genotype):
 
-    def __init__(self, configuration: np.ndarray,
+    def __init__(self,
                  rule: np.ndarray,
-                 hood_size=3):
+                 size: int,
+                 hood_size=3,
+                 configuration: np.ndarray = None):
 
-        self.hood_size = hood_size
-        self.configuration = configuration
         self._rule = rule
-        self._size = len(self.configuration)
+        self.hood_size = hood_size
+
+        if configuration is None:
+            self.configuration = np.zeros(size, dtype='i1')
+        else:
+            self.configuration = configuration
+
+        self._size = size
         self.history = []
 
     def __str__(self):
         return str(self.configuration)
 
+    @DeprecationWarning
     def __format_rule(self, rule: int) -> List[str]:
         rule_string = [x for x in format(rule, f"0{2 ** self.hood_size}b")]
 
@@ -54,7 +62,7 @@ class CellularAutomaton1D(Genotype):
         return self._rule
 
     @rule.setter
-    def rule(self, rule: int):
+    def rule(self, rule: np.ndarray):
         self._rule = rule
 
     @property
@@ -65,7 +73,11 @@ class CellularAutomaton1D(Genotype):
     def size(self, size):
         self._size = size
 
-    def run_time_evolution(self, steps):
+    def encode_staring_state(self, observations: np.ndarray):
+        for i in range(len(observations)):
+            self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
+
+    def run_time_evolution(self, steps: int):
         for i in range(steps):
             self.history.append(self.configuration)
             self.configuration_time_step()

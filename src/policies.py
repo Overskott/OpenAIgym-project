@@ -24,14 +24,9 @@ def naive_control(observation):
 
 
 def simple_ca(observation, model: CellularAutomaton1D):
-    obs = utils.observables_to_binary(observation)[1:]
-    configuration = np.zeros(model.size)
-
-    for i, value in enumerate(obs):
-        configuration[i*len(obs)] = value
-
     ca = model
-    ca.configuration = configuration
+    obs = utils.observables_to_binary(observation)
+    ca.encode_staring_state(obs)
     ca.run_time_evolution(ca.size)
     action = voting_result(ca.configuration)
 
@@ -40,7 +35,7 @@ def simple_ca(observation, model: CellularAutomaton1D):
 
 def voting_result(array: np.ndarray):
     result = int(np.round(sum(array)/len(array)))
-    print(result)
+
     return result
 
 

@@ -24,12 +24,15 @@ def int_to_binary(value: int, length: int) -> np.ndarray:
 
 def observables_to_binary(observables):
     """Observables = [position, velocity, angle, angular_momentum]"""
-    state = np.zeros(len(observables))
+    state = np.zeros(len(observables), dtype='i1')
     for i, observable in enumerate(observables):
-        if observable >= 0:
+        if i == 0 and np.abs(observable) > 0.5:
+            state[i] = 1
+        elif observable >= 0:
             state[i] = 1
         else:
             state[i] = 0
+
     return state
 
 
