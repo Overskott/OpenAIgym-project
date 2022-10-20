@@ -12,41 +12,35 @@ from genotypes import CellularAutomaton1D
 from utils import utils
 import environment
 from generation import Population
+import config
 
 env = gym.make("CartPole-v1")
 results = [0, 0, 0]
 
 seed = 42
 #np.random.seed(seed)
-
-from utils.config_parser import get_config_file
-
-data = get_config_file()['parameters']
-
-generation = Population()
-generation.initialize_population()
 results = []
+parents =[]
+for i in range(config.data['evolution_steps']):
 
-for i in range(data['evolution']['evolution_steps']):
     observation, _ = env.reset()
 
+    generation = Population(i)
+    generation.parents = parents
+    generation.get_next_generation()
+
     for phenotype in generation.population:
-        environment.test_genotype(env, phenotype, policies.wide_encoding)
-        #plt.imshow(phenotype.get_history(), cmap = 'gray')
+        phenotype.test_phenotype(env, policies.wide_encoding)
+        #plt.imshow(phenotype.get_history(), cmap='gray')
         #plt.show()
-    print([x.get_fitness() for x in generation.population])
 
-    parents = generation.select_parents()
-    generation.create_next_generation(parents)
-
-    result = sum([parent.get_fitness() for parent in parents])/len(parents)
+    generation.sort_children_by_fitness()
+    fitnesses = [p.get_fitness() for p in generation.population]
+    result = sum(fitnesses[-4:]) / 4
 
     results.append(result)
-    print(f"Generation {i}, average score: {result}")
+    print(f"Generation {i}, best performer {fitnesses[-1]} average score: {result}")
 
-
-
-print([g.get_fitness() for g in generation.population])
 
 plt.plot(results)
 plt.show()

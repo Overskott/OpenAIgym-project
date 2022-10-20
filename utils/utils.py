@@ -18,12 +18,6 @@ def int_to_binary(value: int, length: int) -> np.ndarray:
     return binary_array
 
 
-def get_generation_sorted_by_fitness(generation):
-    fitness_dict = {f: f.get_fitness() for f in generation}
-    sorted_fitness_dict = sorted(fitness_dict.items(), key=lambda x: x[1])
-    return [t[0] for t in sorted_fitness_dict]
-
-
 def observables_to_binary(observables):
     """Observables = [position, velocity, angle, angular_momentum]"""
     state = np.zeros(len(observables), dtype='i1')
@@ -39,13 +33,14 @@ def observables_to_binary(observables):
 
 def observable_to_binary_array(observable: float, low, high, array_size=10):
     """range {-4.8, 4.8}"""
-    discrete = np.linspace(low, high, array_size+1)
+    values = np.linspace(low, high, array_size+1)
     binary_array = np.zeros(array_size, dtype='i1')
 
     for i in range(array_size):
-        if observable <= discrete[i + 1]:
+        if observable <= values[i + 1]:
             binary_array[i] = 1
             break
+
     return binary_array
 
 

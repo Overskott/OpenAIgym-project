@@ -1,9 +1,12 @@
-
+from abc import ABC, abstractmethod
 from typing import List
 import copy
+
+import gym
 import numpy as np
-from abc import ABC, abstractmethod
-from utils.config_parser import get_config_file
+
+import config
+import utils.utils as utils
 
 
 class Genotype(ABC):
@@ -28,6 +31,10 @@ class Genotype(ABC):
     def clear_history(self):
         pass
 
+    @abstractmethod
+    def test_phenotype(self, environment: gym.Env, policy):
+        pass
+
 
 class CellularAutomaton1D(Genotype):
 
@@ -36,10 +43,8 @@ class CellularAutomaton1D(Genotype):
                  size: int = None,
                  configuration: np.ndarray = None):
 
-        self.data = get_config_file()['parameters']['cellular_automata']
-
         if size is None or size == 0:
-            self.size = self.data['size']
+            self.size = config.data['ca_size']
         else:
             self.size = size
 
@@ -49,21 +54,18 @@ class CellularAutomaton1D(Genotype):
             self.configuration = configuration
 
         self._rule = rule
-        self.hood_size = self.data['hood_size']
+        self.hood_size = config.data['ca_hood_size']
         self.history = []
         self.fitness = 0
 
     def __str__(self):
         return str(self.configuration)
 
-    @DeprecationWarning
-    def __format_rule(self, rule: int) -> List[str]:
-        rule_string = [x for x in format(rule, f"0{2 ** self.hood_size}b")]
-
-        return rule_string
-
     def get_history(self):
         return self.history
+
+    def clear_history(self):
+        self.history = []
 
     def get_fitness(self):
         return self.fitness
@@ -71,17 +73,14 @@ class CellularAutomaton1D(Genotype):
     def set_fitness(self, fitness):
         self.fitness = fitness
 
-    def clear_history(self):
-        self.history = []
-
     @property
     def configuration(self) -> np.ndarray:
         return self._configuration
 
     @configuration.setter
-    def configuration(self, config: np.ndarray):
-        self._configuration = config
-        self.size = len(config)
+    def configuration(self, state: np.ndarray):
+        self._configuration = state
+        self.size = len(state)
 
     @property
     def rule(self) -> np.ndarray:
@@ -104,8 +103,45 @@ class CellularAutomaton1D(Genotype):
         for i in range(len(observations)):
             self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
 
+    def encode_observables(self, observables):
+
+        new_state = np.zeros(self.size)
+        gap = int(config.data['ca_size'] / len(observables))
+
+        for i, observation in enumerate(observables):
+            if i == 0:
+                b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
+            elif i == 2:
+                b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
+            else:
+                b_array = utils.observable_to_binary_array(observation, 10, 10)
+
+            new_state[i * gap:i * gap + 10] = b_array
+
+        self.configuration = new_state
+
+    def test_phenotype(self, environment: gym.Env, policy):
+        score = 0
+        max_steps = 500
+        observation, _ = environment.reset()
+
+        for i in range(max_steps):
+
+            action = policy(observation, self)  # User-defined policy function
+            observation, reward, terminated, truncated, _ = environment.step(action)
+            score += reward
+
+            if terminated:
+                break
+            elif truncated:
+                break
+
+        self.set_fitness(score)
+
+        environment.close()
+
     def run_time_evolution(self):
-        for i in range(self.data['steps']):
+        for i in range(config.data['ca_steps']):
             self.history.append(self.configuration)
             self.configuration_time_step()
 
@@ -151,6 +187,8 @@ class CellularAutomaton1D(Genotype):
             neighborhood += str(int(cell))
 
         return neighborhood
+
+
 
     def generate_gene(self) -> List[any]:
         gene_list = [self.configuration, self.rule, self.hood_size]

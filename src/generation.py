@@ -3,65 +3,65 @@ from typing import List
 from src import policies
 from genotypes import Genotype, CellularAutomaton1D
 import numpy as np
-from utils.config_parser import get_config_file
+import config
 from utils.utils import *
 
 
 class Population(object):
 
-    def __init__(self):
-        self.population = []
-        self.id = id
-
-        self.parameters = get_config_file()['parameters']
+    def __init__(self, id_number):
+        self.parents: List[Genotype] = []
+        self.population: List[Genotype] = []
+        self.id = id_number
+        self.generation_size = config.data['generation_size']
 
     def random_rule(self):
-        return np.random.randint(0, 2, 2 ** self.parameters['cellular_automata']['hood_size'], dtype='i1')
+        return np.random.randint(0, 2, 2 ** config.data['ca_hood_size'], dtype='i1')
 
     def initialize_population(self):
         self.population = []
-        gen_size = self.parameters['evolution']['generation_size']
 
-        for i in range(gen_size):
+        for i in range(self.generation_size):
             rule = self.random_rule()
             phenotype = CellularAutomaton1D(rule)
             self.population.append(phenotype)
 
     def select_parents(self) -> List[Genotype]:
-        generation_sorted = get_generation_sorted_by_fitness(self.population)
-        best_individuals = generation_sorted[len(generation_sorted) >> 1:]
-        print(f"Best ind: {[x.get_fitness() for x in best_individuals]}")
-        return best_individuals
+        self.sort_children_by_fitness()
+        return self.population[:self.generation_size >> 1]
 
-    def create_next_generation(self, parents: List):
+    def sort_children_by_fitness(self):
+        fitness_dict = {f: f.get_fitness() for f in self.population}
+        sorted_dict = sorted(fitness_dict.items(), key=lambda x: x[1])
+        self.population = [c[0] for c in sorted_dict]
 
-        parents = parents
-        new_generation = []
-        data = get_config_file()['parameters']
-        gen_size = data['evolution']['generation_size']
+    def get_next_generation(self):
+        next_generation = []
+        if len(self.parents) == 0:
+            self.initialize_population()
+        else:
+            for i in range(0, len(self.parents)-2):
 
-        for i in range(0, len(parents)-2):
+                parent_1 = self.parents[i-1]
+                parent_2 = self.parents[i]
 
-            parent_1 = parents[i-1]
-            parent_2 = parents[i]
+                rule1, rule2 = self.rule_crossover(parent_1, parent_2)
+                child1 = CellularAutomaton1D(rule1)
+                child2 = CellularAutomaton1D(rule2)
 
-            rule1, rule2 = self.rule_crossover(parent_1, parent_2)
-            phenotype = CellularAutomaton1D(rule1)
-            new_generation.append(phenotype)
-            phenotype = CellularAutomaton1D(rule2)
-            new_generation.append(phenotype)
+                self.population.append(child1)
+                self.population.append(child2)
 
-        new_generation.append(parents[-4])
-        new_generation.append(parents[-3])
-        new_generation.append(parents[-2])
-        new_generation.append(parents[-1])
+            next_generation.append(self.parents[-4])
+            next_generation.append(self.parents[-3])
+            next_generation.append(self.parents[-2])
+            next_generation.append(self.parents[-1])
 
+        return next_generation
 
-        self.population = new_generation
+    def rule_crossover(self, parent_1: Genotype, parent_2: Genotype):
 
-    def rule_crossover(self, parent_1: CellularAutomaton1D, parent_2: CellularAutomaton1D):
-
-        hood_size = self.parameters['cellular_automata']['hood_size']
+        hood_size = config.data['ca_hood_size']
         rule_length = 2 ** hood_size
 
         cross_index = np.random.randint(rule_length / 3, rule_length - rule_length / 3)

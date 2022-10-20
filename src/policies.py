@@ -2,6 +2,7 @@
 from genotypes import CellularAutomaton1D
 from utils import utils
 import numpy as np
+import config
 
 
 def right_control(observation):
@@ -34,14 +35,7 @@ def simple_ca(observation, model: CellularAutomaton1D):
 
 def wide_encoding(observations, model: CellularAutomaton1D):
     ca = model
-
-    new_state = np.zeros(ca.size)
-    for i, observation in enumerate(observations):
-        b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
-        if i == 2:
-            b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
-        new_state[i*25:i*25+10] = b_array
-    ca.configuration = new_state
+    ca.encode_observables(observations)
     ca.run_time_evolution()
     action = voting_result(ca.configuration)
 
