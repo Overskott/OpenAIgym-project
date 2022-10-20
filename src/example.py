@@ -1,9 +1,9 @@
 import gym
 import policies
-import utils
+from utils import utils
 from genotypes import CellularAutomaton1D
 
-rule = utils.int_to_binary(3002457800, 2**5)
+rule = utils.int_to_binary(3002457800, 2 ** 5)
 print(rule)
 score = 0
 seed = 5354

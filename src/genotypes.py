@@ -3,17 +3,29 @@ from typing import List
 import copy
 import numpy as np
 from abc import ABC, abstractmethod
-
+from utils.config_parser import get_config_file
 
 
 class Genotype(ABC):
 
     @abstractmethod
-    def run_time_evolution(self, steps):
+    def run_time_evolution(self):
         pass
 
     @abstractmethod
     def get_history(self):
+        pass
+
+    @abstractmethod
+    def get_fitness(self):
+        pass
+
+    @abstractmethod
+    def set_fitness(self, fitness):
+        pass
+
+    @abstractmethod
+    def clear_history(self):
         pass
 
 
@@ -21,20 +33,25 @@ class CellularAutomaton1D(Genotype):
 
     def __init__(self,
                  rule: np.ndarray,
-                 size: int,
-                 hood_size=3,
+                 size: int = None,
                  configuration: np.ndarray = None):
 
-        self._rule = rule
-        self.hood_size = hood_size
+        self.data = get_config_file()['parameters']['cellular_automata']
+
+        if size is None or size == 0:
+            self.size = self.data['size']
+        else:
+            self.size = size
 
         if configuration is None:
-            self.configuration = np.zeros(size, dtype='i1')
+            self.configuration = np.zeros(self.size, dtype='i1')
         else:
             self.configuration = configuration
 
-        self._size = size
+        self._rule = rule
+        self.hood_size = self.data['hood_size']
         self.history = []
+        self.fitness = 0
 
     def __str__(self):
         return str(self.configuration)
@@ -48,6 +65,15 @@ class CellularAutomaton1D(Genotype):
     def get_history(self):
         return self.history
 
+    def get_fitness(self):
+        return self.fitness
+
+    def set_fitness(self, fitness):
+        self.fitness = fitness
+
+    def clear_history(self):
+        self.history = []
+
     @property
     def configuration(self) -> np.ndarray:
         return self._configuration
@@ -55,10 +81,10 @@ class CellularAutomaton1D(Genotype):
     @configuration.setter
     def configuration(self, config: np.ndarray):
         self._configuration = config
-        self.size = len(self.configuration)
+        self.size = len(config)
 
     @property
-    def rule(self):
+    def rule(self) -> np.ndarray:
         return self._rule
 
     @rule.setter
@@ -66,26 +92,27 @@ class CellularAutomaton1D(Genotype):
         self._rule = rule
 
     @property
-    def size(self):
+    def size(self) -> int:
         return self._size
 
     @size.setter
-    def size(self, size):
+    def size(self, size: int):
         self._size = size
 
     def encode_staring_state(self, observations: np.ndarray):
+        self.configuration = np.zeros(self.size, dtype='i1')
         for i in range(len(observations)):
             self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
 
-    def run_time_evolution(self, steps: int):
-        for i in range(steps):
+    def run_time_evolution(self):
+        for i in range(self.data['steps']):
             self.history.append(self.configuration)
             self.configuration_time_step()
 
     def configuration_time_step(self):
         new_state = copy.deepcopy(self.configuration)
 
-        for i in range(self._size):
+        for i in range(self.size):
             new_state[i] = self.cell_time_step(i)
 
         self.configuration = new_state

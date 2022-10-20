@@ -1,18 +1,21 @@
-from genotypes import CellularAutomaton1D, Genotype
+from genotypes import CellularAutomaton1D
 import numpy as np
 import matplotlib.pyplot as plt
-import utils
+from utils import utils
 
-size = 100
-hood_size = 3
-rule = utils.int_to_binary(90, 2**hood_size)
-state = np.random.randint(0, 2, dtype='i1', size=size)
-ca = CellularAutomaton1D(rule=rule, size=size, hood_size=hood_size)
-ca.encode_staring_state(np.array([1,0,1,0]))
-ca.run_time_evolution(size)
+space = np.linspace(-4.8, 4.8, 11)
+cells = np.zeros(10, dtype='i1')
 
-plt.imshow(ca.get_history(), cmap='gray')
-plt.show()
+obs = 4
+
+for i in range(10):
+    if obs < space[i+1]:
+        cells[i] = 1
+        break
+
+print(space)
+print(cells)
+
 
 #TODO asyncronous CA (50% of cells are updated)
 

@@ -1,8 +1,7 @@
 
 from genotypes import CellularAutomaton1D
-import utils
+from utils import utils
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def right_control(observation):
@@ -27,7 +26,23 @@ def simple_ca(observation, model: CellularAutomaton1D):
     ca = model
     obs = utils.observables_to_binary(observation)
     ca.encode_staring_state(obs)
-    ca.run_time_evolution(ca.size)
+    ca.run_time_evolution()
+    action = voting_result(ca.configuration)
+
+    return action
+
+
+def wide_encoding(observations, model: CellularAutomaton1D):
+    ca = model
+
+    new_state = np.zeros(ca.size)
+    for i, observation in enumerate(observations):
+        b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
+        if i == 2:
+            b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
+        new_state[i*25:i*25+10] = b_array
+    ca.configuration = new_state
+    ca.run_time_evolution()
     action = voting_result(ca.configuration)
 
     return action
@@ -35,40 +50,6 @@ def simple_ca(observation, model: CellularAutomaton1D):
 
 def voting_result(array: np.ndarray):
     result = int(np.round(sum(array)/len(array)))
-
     return result
 
 
-def voting_rule(observations, rule) -> int:
-    configuration = utils.observables_to_binary(observations)
-    ca = CellularAutomaton1D(configuration, rule,)
-    ca.run_time_evolution(4)
-    action = int(np.round(sum(configuration/len(configuration))))
-
-    return action
-
-
-def spread_out(observations, rule, size=40):
-    obs = CA.observables_to_binary(observations)
-    state = np.zeros(size, dtype='i4')
-    distance = int(size/len(obs))
-
-    for i in range(len(obs)):
-        state[i*distance] = obs[i]
-
-    ca = CA.CellularAutomaton1D(configuration=state, rule=rule, iterations=size)
-
-    ca.run_time_evolution()
-    sum = 0
-
-    for value in ca.configuration:
-        sum += value
-
-    if sum < int(size/2):
-        action = 0
-    else:
-        action = 1
-    return action
-
-def funnel(observation, rule, size=10):
-    pass
