@@ -1,0 +1,14 @@
+{
+  "parameters":{
+    "evolution": {
+      "evolution_steps": 100,
+      "generation_size": 20,
+      "selection": "normal"
+    },
+    "cellular_automata": {
+      "size": 100,
+      "steps": 15,
+      "hood_size": 5
+    }
+  }
+}
