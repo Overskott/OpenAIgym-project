@@ -1,36 +1,43 @@
 from typing import List
 
-from src import policies
+
 from genotypes import Genotype, CellularAutomaton1D
-import numpy as np
 import config
 from utils.utils import *
 
 
 class Population(object):
 
-    def __init__(self, id_number):
-        self.parents: List[Genotype] = []
+    def __init__(self, id_number, parents=None):
+        if parents is None:
+            self.parents = []
+        else:
+            self.parents: List[Genotype] = parents
         self.population: List[Genotype] = []
+
         self.id = id_number
         self.generation_size = config.data['generation_size']
+
+        self.population = self.get_next_generation()
 
     def random_rule(self):
         return np.random.randint(0, 2, 2 ** config.data['ca_hood_size'], dtype='i1')
 
     def initialize_population(self):
-        self.population = []
+        population = []
 
         for i in range(self.generation_size):
             rule = self.random_rule()
             phenotype = CellularAutomaton1D(rule)
-            self.population.append(phenotype)
+            population.append(phenotype)
+
+        return population
 
     def select_parents(self) -> List[Genotype]:
-        self.sort_children_by_fitness()
+        self.sort_population_by_fitness()
         return self.population[:self.generation_size >> 1]
 
-    def sort_children_by_fitness(self):
+    def sort_population_by_fitness(self):
         fitness_dict = {f: f.get_fitness() for f in self.population}
         sorted_dict = sorted(fitness_dict.items(), key=lambda x: x[1])
         self.population = [c[0] for c in sorted_dict]
@@ -38,8 +45,9 @@ class Population(object):
     def get_next_generation(self):
         next_generation = []
         if len(self.parents) == 0:
-            self.initialize_population()
+            next_generation = self.initialize_population()
         else:
+            print("found parents")
             for i in range(0, len(self.parents)-2):
 
                 parent_1 = self.parents[i-1]

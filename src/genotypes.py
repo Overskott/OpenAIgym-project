@@ -188,8 +188,6 @@ class CellularAutomaton1D(Genotype):
 
         return neighborhood
 
-
-
     def generate_gene(self) -> List[any]:
         gene_list = [self.configuration, self.rule, self.hood_size]
 

@@ -1,9 +1,9 @@
 {
-  "evolution_steps": 20,
+  "evolution_steps": 200,
   "generation_size": 20,
   "selection": "normal",
   "ca_size": 100,
-  "ca_steps": 30,
+  "ca_steps": 50,
   "ca_hood_size": 5
 
 }
