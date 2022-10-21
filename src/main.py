@@ -2,48 +2,67 @@
 #  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
 #
 #
-import random
+import time
+from typing import List
 
 import gym
-import numpy as np
 import matplotlib.pyplot as plt
-import policies
-from genotypes import CellularAutomaton1D
-from utils import utils
-import environment
-from generation import Population
-import config
+import numpy as np
 
+import config
+import policies
+from generation import Generation
+from utils.utils import *
+import evolution
 env = gym.make("CartPole-v1")
 results = [0, 0, 0]
 
 seed = 42
 #np.random.seed(seed)
-generations = []
-parents = None
-for i in range(config.data['evolution_steps']):
+generation_history = []
+best_list = []
+next_gen = None
+plt.ion()
+fig = plt.figure()
+for i in range(config.data['generations']):
 
-    observation, _ = env.reset()
+    observation, _ = env.reset(seed=seed)
 
-    generation = Population(i, parents=parents)
+    generation = Generation(i + 1, next_gen)
+
+
 
     for phenotype in generation.population:
         phenotype.test_phenotype(env, policies.wide_encoding)
+        #print(f"Phenotype fitness: {phenotype.get_fitness()}")
         #plt.imshow(phenotype.get_history(), cmap='gray')
         #plt.show()
 
+    generation_history.append(generation)
     generation.sort_population_by_fitness()
-    generations.append(generation)
-    parents = generation.select_parents()
 
-    print([x.get_fitness() for x in parents])
-    fitnesses = [p.get_fitness() for p in generation.population]
+    fitnesses = np.asarray(generation.get_population_fitness())
+    print(f"Best individual - fitness: {generation[-1].get_fitness()}, "
+          f"size: {generation[-1].size}, steps: {generation[-1].steps}, "
+          f"rule: {binary_to_int(generation.population[-1].rule)}, "
+          f"id: {id(generation[-1])}")
+
     result = sum(fitnesses[-4:]) / 4
-
     results.append(result)
+
+    best_list.append(fitnesses[-1])
+
+    plt.plot([g.get_population_fitness() for g in generation_history])
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
     print(f"Generation {i} average score: {result}")
 
-print([g.id for g in generations])
+    next_gen = evolution.generate_offspring(generation)
+    print([binary_to_int(i.rule) for i in next_gen])
+
+#print([[i.get_fitness() for i in g.population] for g in generations])
 
 plt.plot(results)
 plt.show()

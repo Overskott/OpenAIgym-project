@@ -41,17 +41,23 @@ class CellularAutomaton1D(Genotype):
     def __init__(self,
                  rule: np.ndarray,
                  size: int = None,
+                 steps: int = None,
                  configuration: np.ndarray = None):
 
         if size is None or size == 0:
-            self.size = config.data['ca_size']
+            self.size = np.random.randint(config.data['ca_size_low'], config.data['ca_size_high'])
         else:
             self.size = size
+
+        if steps is None:
+            self.steps = np.random.randint(config.data['ca_steps_low'], config.data['ca_steps_high'])
+        else:
+            self.steps = steps
 
         if configuration is None:
             self.configuration = np.zeros(self.size, dtype='i1')
         else:
-            self.configuration = configuration
+            self.configuration = copy.deepcopy(configuration)
 
         self._rule = rule
         self.hood_size = config.data['ca_hood_size']
@@ -79,7 +85,7 @@ class CellularAutomaton1D(Genotype):
 
     @configuration.setter
     def configuration(self, state: np.ndarray):
-        self._configuration = state
+        self._configuration = copy.deepcopy(state)
         self.size = len(state)
 
     @property
@@ -105,8 +111,8 @@ class CellularAutomaton1D(Genotype):
 
     def encode_observables(self, observables):
 
-        new_state = np.zeros(self.size)
-        gap = int(config.data['ca_size'] / len(observables))
+        new_state = np.zeros(self.size, dtype='u4')
+        gap = int(self.size / len(observables))
 
         for i, observation in enumerate(observables):
             if i == 0:
@@ -122,31 +128,34 @@ class CellularAutomaton1D(Genotype):
 
     def test_phenotype(self, environment: gym.Env, policy):
         score = 0
-        max_steps = 500
-        observation, _ = environment.reset()
+        repeats = config.data['test_rounds']
+        for step in range(repeats):
+            max_steps = 500
+            observation, _ = environment.reset()
 
-        for i in range(max_steps):
+            for i in range(max_steps):
 
-            action = policy(observation, self)  # User-defined policy function
-            observation, reward, terminated, truncated, _ = environment.step(action)
-            score += reward
+                action = policy(observation, self)  # User-defined policy function
+                observation, reward, terminated, truncated, _ = environment.step(action)
+                score += reward
 
-            if terminated:
-                break
-            elif truncated:
-                break
+                if terminated:
+                    break
+                elif truncated:
+                    break
 
-        self.set_fitness(score)
+            self.set_fitness(np.round(score/repeats))
 
         environment.close()
 
     def run_time_evolution(self):
-        for i in range(config.data['ca_steps']):
+        self.clear_history()
+        for i in range(self.steps):
             self.history.append(self.configuration)
             self.configuration_time_step()
 
     def configuration_time_step(self):
-        new_state = copy.deepcopy(self.configuration)
+        new_state = np.zeros(self.size, dtype='u4')
 
         for i in range(self.size):
             new_state[i] = self.cell_time_step(i)
@@ -199,3 +208,25 @@ class CellularAutomaton1D(Genotype):
         self.hood_size = gene[2]
         pass
 
+    def showcase_phenotype(self, environment, policy):
+        env = environment
+        score = 0
+        model = self
+        observation, _ = env.reset()
+
+        for _ in range(500):
+            action = policy(observation, model)  # User-defined policy function
+            observation, reward, terminated, truncated, _ = env.step(action)
+
+            score += reward
+
+            if terminated:
+                observation = env.reset()
+                print(f"Run terminated with score {score}")
+                break
+            elif truncated:
+                observation = env.reset()
+                print(f"Run truncated with score {score}")
+                break
+
+        env.close()

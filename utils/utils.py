@@ -20,7 +20,7 @@ def int_to_binary(value: int, length: int) -> np.ndarray:
 
 def observables_to_binary(observables):
     """Observables = [position, velocity, angle, angular_momentum]"""
-    state = np.zeros(len(observables), dtype='i1')
+    state = np.zeros(len(observables), dtype='u4')
     for i, observable in enumerate(observables):
         if i == 0 and np.abs(observable) > 0.5:
             state[i] = 1
@@ -34,7 +34,7 @@ def observables_to_binary(observables):
 def observable_to_binary_array(observable: float, low, high, array_size=10):
     """range {-4.8, 4.8}"""
     values = np.linspace(low, high, array_size+1)
-    binary_array = np.zeros(array_size, dtype='i1')
+    binary_array = np.zeros(array_size, dtype='u4')
 
     for i in range(array_size):
         if observable <= values[i + 1]:

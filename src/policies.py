@@ -34,6 +34,15 @@ def simple_ca(observation, model: CellularAutomaton1D):
 
 
 def wide_encoding(observations, model: CellularAutomaton1D):
+
+    model.encode_observables(observations)
+    model.run_time_evolution()
+    action = voting_result(model.configuration)
+
+    return action
+
+
+def random_generation(observations, model: CellularAutomaton1D):
     ca = model
     ca.encode_observables(observations)
     ca.run_time_evolution()
