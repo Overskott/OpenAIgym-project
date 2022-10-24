@@ -1,8 +1,7 @@
 
-from genotypes import CellularAutomaton1D
+from genotypes import CellularAutomaton1D, NeuralNetwork
 from utils import utils
 import numpy as np
-import config
 
 
 def right_control(observation):
@@ -23,7 +22,7 @@ def naive_control(observation):
         return 0
 
 
-def simple_ca(observation, model: CellularAutomaton1D):
+def simple_encoding(observation, model: CellularAutomaton1D):
     ca = model
     obs = utils.observables_to_binary(observation)
     ca.encode_staring_state(obs)
@@ -56,3 +55,19 @@ def voting_result(array: np.ndarray):
     return result
 
 
+def nn_basic_encoding(observation, model: NeuralNetwork):
+    nn = model
+    obs = utils.observables_to_binary(observation).reshape(1, 4)
+    nn.set_input_values(obs)
+    result = nn.calculate_output_value()
+    action = activation_func(result)
+
+    return int(action)
+
+
+def activation_func(value):
+    return np.round(sigmoid(value))
+
+
+def sigmoid(value: float) -> float:
+    return 1/(1+np.exp(-value))

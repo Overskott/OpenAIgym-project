@@ -2,18 +2,15 @@
 #  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
 #
 #
-import time
-from typing import List
 
 import gym
 import matplotlib.pyplot as plt
-import numpy as np
-
-import config
 import policies
 from generation import Generation
 from utils.utils import *
 import evolution
+import config
+
 env = gym.make("CartPole-v1")
 results = [0, 0, 0]
 
@@ -24,16 +21,16 @@ best_list = []
 next_gen = None
 plt.ion()
 fig = plt.figure()
-for i in range(config.data['generations']):
+
+
+for i in range(config.data['evolution']['generations']):
 
     observation, _ = env.reset(seed=seed)
 
     generation = Generation(i + 1, next_gen)
 
-
-
     for phenotype in generation.population:
-        phenotype.test_phenotype(env, policies.wide_encoding)
+        phenotype.find_phenotype_fitness(env, policies.wide_encoding)
         #print(f"Phenotype fitness: {phenotype.get_fitness()}")
         #plt.imshow(phenotype.get_history(), cmap='gray')
         #plt.show()
@@ -42,13 +39,10 @@ for i in range(config.data['generations']):
     generation.sort_population_by_fitness()
 
     fitnesses = np.asarray(generation.get_population_fitness())
-    print(f"Best individual - fitness: {generation[-1].get_fitness()}, "
+    print(f"Generation {i}: Best individual fitness: {generation[-1].get_fitness()}, "
           f"size: {generation[-1].size}, steps: {generation[-1].steps}, "
           f"rule: {binary_to_int(generation.population[-1].rule)}, "
           f"id: {id(generation[-1])}")
-
-    result = sum(fitnesses[-4:]) / 4
-    results.append(result)
 
     best_list.append(fitnesses[-1])
 
@@ -57,10 +51,8 @@ for i in range(config.data['generations']):
     fig.canvas.draw()
     fig.canvas.flush_events()
 
-    print(f"Generation {i} average score: {result}")
-
-    next_gen = evolution.generate_offspring(generation)
-    print([binary_to_int(i.rule) for i in next_gen])
+    next_gen = evolution.generate_offspring_ca(generation)
+    #print([binary_to_int(i.rule) for i in next_gen])
 
 #print([[i.get_fitness() for i in g.population] for g in generations])
 

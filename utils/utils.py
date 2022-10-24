@@ -1,5 +1,5 @@
-import random
 import numpy as np
+import config
 
 
 def binary_to_int(array: np.ndarray):
@@ -31,7 +31,8 @@ def observables_to_binary(observables):
     return state
 
 
-def observable_to_binary_array(observable: float, low, high, array_size=10):
+def observable_to_binary_array(observable: float, low, high,
+                               array_size=config.data['cellular_automata']['observation_encoding_size']):
     """range {-4.8, 4.8}"""
     values = np.linspace(low, high, array_size+1)
     binary_array = np.zeros(array_size, dtype='u4')

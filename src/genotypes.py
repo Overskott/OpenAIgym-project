@@ -11,9 +11,9 @@ import utils.utils as utils
 
 class Genotype(ABC):
 
-    @abstractmethod
-    def run_time_evolution(self):
-        pass
+    # @abstractmethod
+    # def run_time_evolution(self):
+    #     pass
 
     @abstractmethod
     def get_history(self):
@@ -32,25 +32,32 @@ class Genotype(ABC):
         pass
 
     @abstractmethod
-    def test_phenotype(self, environment: gym.Env, policy):
+    def find_phenotype_fitness(self, environment: gym.Env, policy):
         pass
 
 
 class CellularAutomaton1D(Genotype):
 
     def __init__(self,
-                 rule: np.ndarray,
-                 size: int = None,
+                 candidate_number: str,
+                 rule: np.ndarray = None,
+                 size: np.ndarray = None,
                  steps: int = None,
                  configuration: np.ndarray = None):
+        self.candidate_number = candidate_number
+        self.hood_size = config.data['cellular_automata']['ca_hood_size']
+        self.history = []
+        self.fitness = 0
 
         if size is None or size == 0:
-            self.size = np.random.randint(config.data['ca_size_low'], config.data['ca_size_high'])
+            self.size = np.random.randint(config.data['cellular_automata']['ca_size_low'],
+                                          config.data['cellular_automata']['ca_size_high'])
         else:
             self.size = size
 
         if steps is None:
-            self.steps = np.random.randint(config.data['ca_steps_low'], config.data['ca_steps_high'])
+            self.steps = np.random.randint(config.data['cellular_automata']['ca_steps_low'],
+                                           config.data['cellular_automata']['ca_steps_high'])
         else:
             self.steps = steps
 
@@ -59,10 +66,10 @@ class CellularAutomaton1D(Genotype):
         else:
             self.configuration = copy.deepcopy(configuration)
 
-        self._rule = rule
-        self.hood_size = config.data['ca_hood_size']
-        self.history = []
-        self.fitness = 0
+        if rule is None:
+            self.rule = np.random.randint(0, 2, 2**self.hood_size, dtype='u4')
+        else:
+            self.rule = rule
 
     def __str__(self):
         return str(self.configuration)
@@ -111,8 +118,9 @@ class CellularAutomaton1D(Genotype):
 
     def encode_observables(self, observables):
 
+        size = config.data['cellular_automata']['observation_encoding_size']
         new_state = np.zeros(self.size, dtype='u4')
-        gap = int(self.size / len(observables))
+        gap = round(self.size / len(observables))
 
         for i, observation in enumerate(observables):
             if i == 0:
@@ -120,15 +128,15 @@ class CellularAutomaton1D(Genotype):
             elif i == 2:
                 b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
             else:
-                b_array = utils.observable_to_binary_array(observation, 10, 10)
+                b_array = utils.observable_to_binary_array(observation, 2, 2)
 
-            new_state[i * gap:i * gap + 10] = b_array
+            new_state[i * gap: i * gap + size] = b_array
 
         self.configuration = new_state
 
-    def test_phenotype(self, environment: gym.Env, policy):
+    def find_phenotype_fitness(self, environment: gym.Env, policy):
         score = 0
-        repeats = config.data['test_rounds']
+        repeats = config.data['evolution']['test_rounds']
         for step in range(repeats):
             max_steps = 500
             observation, _ = environment.reset()
@@ -162,15 +170,10 @@ class CellularAutomaton1D(Genotype):
 
         self.configuration = new_state
 
-    def cell_time_step(self, cell_index, boundary_condition='Periodic'):
-        if boundary_condition == 'Periodic':
-            neighborhood = self.__get_cell_neighbourhood(cell_index)
+    def cell_time_step(self, cell_index):
 
-            cell_new_value = self.__apply_rule(neighborhood)
-        elif boundary_condition == 'Fixed':
-            pass
-        else:
-            pass
+        neighborhood = self.__get_cell_neighbourhood(cell_index)
+        cell_new_value = self.__apply_rule(neighborhood)
 
         return cell_new_value
 
@@ -221,12 +224,113 @@ class CellularAutomaton1D(Genotype):
             score += reward
 
             if terminated:
-                observation = env.reset()
+                env.reset()
                 print(f"Run terminated with score {score}")
                 break
             elif truncated:
-                observation = env.reset()
+                env.reset()
                 print(f"Run truncated with score {score}")
                 break
 
         env.close()
+
+
+class NeuralNetwork(Genotype):
+
+    def __init__(self,
+                 candidate_number: str,
+                 input_weights: np.ndarray = None,
+                 hidden_layer_bias: np.ndarray = None,
+                 output_weights: np.ndarray = None):
+
+        if input_weights is None:
+            self.input_weights = np.random.uniform(-1, 1, (4, config.data['neural_network']['hidden_layer_size']))
+        else:
+            self.input_weights = input_weights
+
+        if hidden_layer_bias is None:
+            self.hidden_layer_bias = np.random.uniform(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+        else:
+            self.hidden_layer_bias = hidden_layer_bias
+
+        if output_weights is None:
+            self.output_weights = np.random.uniform(-1, 1, (config.data['neural_network']['hidden_layer_size'], 1))
+        else:
+            self.output_weights = output_weights
+
+        self.candidate_number = candidate_number
+        self.input_layer = np.zeros((1, 4))
+        self.fitness = 0
+        self.history = []
+
+    def __str__(self):
+        pass
+
+    @property
+    def input_weights(self) -> np.ndarray:
+        return self._input_weights
+
+    @input_weights.setter
+    def input_weights(self, weights: np.ndarray):
+        self._input_weights = weights
+
+    @property
+    def hidden_layer_bias(self) -> np.ndarray:
+        return self._hidden_layer_bias
+
+    @hidden_layer_bias.setter
+    def hidden_layer_bias(self, bias: np.ndarray):
+        self._hidden_layer_bias = bias
+
+    @property
+    def output_weights(self) -> np.ndarray:
+        return self._output_weights
+
+    @output_weights.setter
+    def output_weights(self, weights: np.ndarray):
+        self._output_weights = weights
+
+    def set_input_values(self, input_array: np.ndarray):
+        self.input_layer = copy.deepcopy(input_array)
+
+    def calculate_output_value(self) -> float:
+
+        hidden_layer = np.dot(self.input_layer, self.input_weights) + self.hidden_layer_bias
+        output_value = np.dot(hidden_layer, self.output_weights)
+
+        return np.float(output_value)
+
+    def get_history(self):
+        pass
+
+    def clear_history(self):
+        pass
+
+    def get_fitness(self):
+        return self.fitness
+
+    def set_fitness(self, fitness):
+        self.fitness = fitness
+
+    def find_phenotype_fitness(self, environment: gym.Env, policy):
+        score = 0
+        repeats = config.data['evolution']['test_rounds']
+        for step in range(repeats):
+            max_steps = 500
+            observation, _ = environment.reset(seed=0)
+
+            for i in range(max_steps):
+
+                action = policy(observation, self)  # User-defined policy function
+                observation, reward, terminated, truncated, _ = environment.step(action)
+                score += reward
+
+                if terminated:
+                    break
+                elif truncated:
+                    break
+
+            self.set_fitness(np.round(score / repeats))
+
+        # environment.close()
+

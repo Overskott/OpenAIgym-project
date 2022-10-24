@@ -1,15 +1,22 @@
 {
-  "generations": 500,
-  "generation_size": 100,
-  "test_rounds": 1,
-  "ca_size": 100,
-  "ca_steps": 30,
-  "ca_hood_size": 5,
-  "crossover_rate": 0.7,
-  "mutation_rate": 0.1,
-  "ca_size_low": 50,
-  "ca_size_high": 120,
-  "ca_steps_low": 5,
-  "ca_steps_high": 50,
-  "number_of_elites": 1
+  "evolution": {
+    "generations": 500,
+    "generation_size": 50,
+    "test_rounds": 10,
+    "crossover_rate": 0.7,
+    "mutation_rate": 0.1,
+    "number_of_elites": 5
+  },
+  "cellular_automata": {
+    "ca_hood_size": 5,
+    "ca_size_low": 50,
+    "ca_size_high": 150,
+    "ca_steps_low": 20,
+    "ca_steps_high": 100,
+    "observation_encoding_size": 8
+  },
+  "neural_network": {
+    "hidden_layers": 1,
+    "hidden_layer_size": 10
+  }
 }
