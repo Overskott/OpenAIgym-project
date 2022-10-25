@@ -11,7 +11,7 @@ from utils.utils import *
 import evolution
 import config
 
-env = gym.make("CartPole-v1")
+env = gym.make("CartPole-v1",)
 results = [0, 0, 0]
 
 seed = 42
