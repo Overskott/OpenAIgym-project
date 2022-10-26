@@ -40,16 +40,6 @@ def wide_encoding(observations, model: CellularAutomaton1D):
 
     return action
 
-
-def random_generation(observations, model: CellularAutomaton1D):
-    ca = model
-    ca.encode_observables(observations)
-    ca.run_time_evolution()
-    action = voting_result(ca.configuration)
-
-    return action
-
-
 def voting_result(array: np.ndarray):
     result = int(np.round(sum(array)/len(array)))
     return result

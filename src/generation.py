@@ -11,8 +11,6 @@ class Generation(object):
 
 
     """
-
-
     def __init__(self, genotype, id_number, population=None):
 
         self.genotype = genotype

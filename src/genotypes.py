@@ -10,44 +10,75 @@ import utils.utils as utils
 
 
 class Genotype(ABC):
+    """ An abstract class for creating genotypes for the OpenAI pole-cart problem.
 
-    # @abstractmethod
-    # def run_time_evolution(self):
-    #     pass
+        This class is adding needed functions and parameters for us with the policy.py and evolution.py modules.
 
-    @abstractmethod
-    def get_history(self):
-        pass
+        Attributes:
+            fitness (int) : Variable for storing the Genotype's fitness.
+        """
 
-    @abstractmethod
-    def get_fitness(self):
-        pass
+    def __init__(self):
+        """Initialize the Genotype with 0 (lowest) fitness."""
+        self.fitness = 0
 
-    @abstractmethod
-    def set_fitness(self, fitness):
-        pass
+    def get_fitness(self) -> int:
+        """Returns the fitness of the Genotype."""
+        return self.fitness
 
-    @abstractmethod
-    def clear_history(self):
-        pass
+    def set_fitness(self, fitness: int):
+        """Sets the value of fitness to argument value"""
+        self.fitness = fitness
 
     @abstractmethod
     def find_phenotype_fitness(self, environment: gym.Env, policy):
+        """Abstract method to run the pole cart environment with the genotype as and return the fitness
+
+        Args:
+            environment (gym.Env): The OpenAi gym environment the genotype will be tested in.
+            Only CartPole-v1 is supported.
+            policy: A policy defined in the policies.py module. Different policies are supported by different
+            genotpes.
+        """
         pass
 
 
 class CellularAutomaton1D(Genotype):
+    """ Class for instantiating genotypes as 1-dimensional cellular automata.
 
+        This class contains all the parameters and functions for creating and running a 1-dimensional CA to evolve
+        a solution to the OpenAi pole cart challenge.
+
+        Attributes:
+            history (List[CellularAutomata1D]): A list of the CA evolution for each step.
+            candidate_number (str): First number to add.
+            rule (numpy.ndarray): Array containing the rules for the CA to follow.
+            size (int): The size, or width of the CA. Can also be interpreted as number of cells.
+            steps (int): Number of steps the CA will run.
+            configuration (numpy.ndarray): The status of the CA i.e. which cells are 1 and which are 0.
+        """
     def __init__(self,
                  candidate_number: str,
                  rule: np.ndarray = None,
-                 size: np.ndarray = None,
+                 size: int = None,
                  steps: int = None,
                  configuration: np.ndarray = None):
+        """ Initializing an instance of the CellularAutomata1D class. Randomizes most of the
+            attributes if none is given.
+
+            Args:
+                candidate_number (str):
+                rule (numpy.ndarray):
+                size (int):
+                steps (int):
+                configuration (numpy.ndarray):
+
+        """
+        super().__init__()
+
+        self.history = []
         self.candidate_number = candidate_number
         self.hood_size = config.data['cellular_automata']['ca_hood_size']
-        self.history = []
-        self.fitness = 0
 
         if size is None or size == 0:
             self.size = np.random.randint(config.data['cellular_automata']['ca_size_low'],
@@ -62,7 +93,7 @@ class CellularAutomaton1D(Genotype):
             self.steps = steps
 
         if configuration is None:
-            self.configuration = np.zeros(self.size, dtype='i1')
+            self.configuration = np.zeros(self.size, dtype='u4')
         else:
             self.configuration = copy.deepcopy(configuration)
 
@@ -73,18 +104,6 @@ class CellularAutomaton1D(Genotype):
 
     def __str__(self):
         return str(self.configuration)
-
-    def get_history(self):
-        return self.history
-
-    def clear_history(self):
-        self.history = []
-
-    def get_fitness(self):
-        return self.fitness
-
-    def set_fitness(self, fitness):
-        self.fitness = fitness
 
     @property
     def configuration(self) -> np.ndarray:
@@ -111,6 +130,12 @@ class CellularAutomaton1D(Genotype):
     def size(self, size: int):
         self._size = size
 
+    def get_history(self):
+        return self.history
+
+    def clear_history(self):
+        self.history = []
+
     def encode_staring_state(self, observations: np.ndarray):
         self.configuration = np.zeros(self.size, dtype='i1')
         for i in range(len(observations)):
@@ -128,7 +153,7 @@ class CellularAutomaton1D(Genotype):
             elif i == 2:
                 b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
             else:
-                b_array = utils.observable_to_binary_array(observation, 2, 2)
+                b_array = utils.observable_to_binary_array(observation, -100, 100)
 
             new_state[i * gap: i * gap + size] = b_array
 
@@ -200,68 +225,84 @@ class CellularAutomaton1D(Genotype):
 
         return neighborhood
 
-    def generate_gene(self) -> List[any]:
-        gene_list = [self.configuration, self.rule, self.hood_size]
-
-        return gene_list
-
-    def parse_gene(self, gene):
-        self.configuration = gene[0]
-        self.rule = gene[0]
-        self.hood_size = gene[2]
-        pass
-
-    def showcase_phenotype(self, environment, policy):
-        env = environment
-        score = 0
-        model = self
-        observation, _ = env.reset()
-
-        for _ in range(500):
-            action = policy(observation, model)  # User-defined policy function
-            observation, reward, terminated, truncated, _ = env.step(action)
-
-            score += reward
-
-            if terminated:
-                env.reset()
-                print(f"Run terminated with score {score}")
-                break
-            elif truncated:
-                env.reset()
-                print(f"Run truncated with score {score}")
-                break
-
-        env.close()
+    # def generate_gene(self) -> List[any]:
+    #     gene_list = [self.configuration, self.rule, self.hood_size]
+    #
+    #     return gene_list
+    #
+    # def parse_gene(self, gene):
+    #     self.configuration = gene[0]
+    #     self.rule = gene[0]
+    #     self.hood_size = gene[2]
+    #     pass
+    #
+    # def showcase_phenotype(self, environment, policy):
+    #     env = environment
+    #     score = 0
+    #     model = self
+    #     observation, _ = env.reset()
+    #
+    #     for _ in range(500):
+    #         action = policy(observation, model)  # User-defined policy function
+    #         observation, reward, terminated, truncated, _ = env.step(action)
+    #
+    #         score += reward
+    #
+    #         if terminated:
+    #             env.reset()
+    #             print(f"Run terminated with score {score}")
+    #             break
+    #         elif truncated:
+    #             env.reset()
+    #             print(f"Run truncated with score {score}")
+    #             break
+    #
+    #     env.close()
 
 
 class NeuralNetwork(Genotype):
+    """Add up two integer numbers.
 
+        This function simply wraps the ``+`` operator, and does not
+        do anything interesting, except for illustrating what
+        the docstring of a very simple function looks like.
+
+        Args:
+            num1 (int) : First number to add.
+            num2 (int) : Second number to add.
+
+        Returns:
+            The sum of ``num1`` and ``num2``.
+
+        Raises:
+            AnyError: If anything bad happens.
+        """
     def __init__(self,
                  candidate_number: str,
                  input_weights: np.ndarray = None,
                  hidden_layer_bias: np.ndarray = None,
                  output_weights: np.ndarray = None):
 
+        super().__init__()
+
         if input_weights is None:
-            self.input_weights = np.random.uniform(-1, 1, (4, config.data['neural_network']['hidden_layer_size']))
+            self.input_weights = np.random.normal(-1, 1, (4, config.data['neural_network']['hidden_layer_size']))
         else:
             self.input_weights = input_weights
 
         if hidden_layer_bias is None:
-            self.hidden_layer_bias = np.random.uniform(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+            self.hidden_layer_bias = np.random.normal(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
         else:
             self.hidden_layer_bias = hidden_layer_bias
 
         if output_weights is None:
-            self.output_weights = np.random.uniform(-1, 1, (config.data['neural_network']['hidden_layer_size'], 1))
+            self.output_weights = np.random.normal(-1, 1, (config.data['neural_network']['hidden_layer_size'], 1))
         else:
             self.output_weights = output_weights
 
         self.candidate_number = candidate_number
         self.input_layer = np.zeros((1, 4))
         self.fitness = 0
-        self.history = []
 
     def __str__(self):
         pass
@@ -300,24 +341,12 @@ class NeuralNetwork(Genotype):
 
         return np.float(output_value)
 
-    def get_history(self):
-        pass
-
-    def clear_history(self):
-        pass
-
-    def get_fitness(self):
-        return self.fitness
-
-    def set_fitness(self, fitness):
-        self.fitness = fitness
-
     def find_phenotype_fitness(self, environment: gym.Env, policy):
         score = 0
         repeats = config.data['evolution']['test_rounds']
         for step in range(repeats):
             max_steps = 500
-            observation, _ = environment.reset(seed=0)
+            observation, _ = environment.reset()
 
             for i in range(max_steps):
 
