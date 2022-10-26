@@ -27,9 +27,10 @@ generation_history = []
 best_list = []
 best_candidate = NeuralNetwork('0-0')
 next_gen = None
+target_fitness = config.data['evolution']['termination_fitness']
 
-#plt.ion()
-#fig = plt.figure()
+plt.ion()
+fig = plt.figure()
 
 
 for i in range(config.data['evolution']['generations']):
@@ -60,11 +61,12 @@ for i in range(config.data['evolution']['generations']):
 
     best_list.append(fitnesses[-1])
 
- #   plt.plot([g.get_population_fitness() for g in generation_history])
+    plt.plot([g.get_population_fitness() for g in generation_history])
 
-  #  fig.canvas.draw()
-  #  fig.canvas.flush_events()
-
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    if fitnesses[-1] > target_fitness:
+        break
     next_gen = evolution.generate_offspring_nn(generation)
 
 
