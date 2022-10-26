@@ -7,8 +7,11 @@ import evolution
 
 
 class Generation(object):
+    """
 
-    genotype: str
+
+    """
+
 
     def __init__(self, genotype, id_number, population=None):
 
