@@ -1,6 +1,7 @@
 import numpy as np
 import config
-
+import os
+from pathlib import Path
 
 def binary_to_int(array: np.ndarray):
     """Converting a numpy array with binary values to decimal integer"""
@@ -44,4 +45,57 @@ def observable_to_binary_array(observable: float, low, high,
 
     return binary_array
 
+
+def get_date_and_time():
+    from datetime import datetime
+
+    # datetime object containing current date and time
+    now = datetime.now()
+
+    # dd/mm/YY H:M:S
+    return now.strftime("%d.%m.%Y-%Hh%Mm%Ss")
+
+
+def array_to_input_string(array):
+    output_string = '['
+    for i, row in enumerate(array):
+        output_string += '['
+
+        for j, element in enumerate(row):
+            if j < len(row)-1:
+                output_string += str(element)
+                output_string += ', '
+            else:
+                output_string += str(element)
+
+        if i < len(array)-1:
+            output_string += '],\n'
+        else:
+            output_string += ']'
+
+    output_string += ']'
+
+    return output_string
+
+
+def write_to_file(text):
+
+    current_path = Path.cwd()
+    file_name = f"{get_date_and_time()}.txt"
+    parent_dir = current_path.parents[0]
+    result_folder_path = parent_dir / 'results'
+    print(result_folder_path.joinpath(file_name))
+    # check if directory exists
+    if result_folder_path.is_dir():
+        with open(result_folder_path.joinpath(file_name), 'w') as f:
+            f.write(text)
+        print('File created')
+    else:
+        os.makedirs(result_folder_path)
+        print('Directory doesn\'t exist')
+        print(f'Creating {result_folder_path}')
+        print(f"Directory created")
+        with open(result_folder_path.joinpath(file_name), 'w') as f:
+            f.write(text)
+        print('File created')
 

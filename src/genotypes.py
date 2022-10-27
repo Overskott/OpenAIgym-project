@@ -281,6 +281,7 @@ class NeuralNetwork(Genotype):
 
         super().__init__()
 
+
         if input_weights is None:
             self.input_weights = np.random.normal(-1, 1, (4, config.data['neural_network']['hidden_layer_size']))
         else:
@@ -301,7 +302,12 @@ class NeuralNetwork(Genotype):
         self.fitness = 0
 
     def __str__(self):
-        pass
+        return f"NeuralNetwork ID: {self.candidate_number}, Fitness: {self.fitness}\n" \
+               f"\nParameters: {config.data['evolution']}\n" \
+               f"{config.data['neural_network']}\n" \
+               f"\nInput Weights:\n{utils.array_to_input_string(self.input_weights)}\n" \
+               f"\nHidden Layer Bias:\n{utils.array_to_input_string(self.hidden_layer_bias)}\n" \
+               f"\nOutput_weights:\n{utils.array_to_input_string(self.output_weights)}" \
 
     @property
     def input_weights(self) -> np.ndarray:
@@ -357,5 +363,4 @@ class NeuralNetwork(Genotype):
 
             self.set_fitness(np.round(score / repeats))
 
-        # environment.close()
 

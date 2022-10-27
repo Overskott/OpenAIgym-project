@@ -120,12 +120,12 @@ def generate_offspring_nn(parents: Generation):
     parents.sort_population_by_fitness()
     index = 1
 
-    for i in range(config.data['evolution']['number_of_elites']):
-        parent1 = parents[-1 - i]
-
-        parent_number = parent1.candidate_number
-        offspring.append(NeuralNetwork(parent_number, parent1.input_weights,
-                                       parent1.hidden_layer_bias, parent1.output_weights))
+    # for i in range(config.data['evolution']['number_of_elites']):
+    #     parent1 = parents[-1 - i]
+    #
+    #     parent_number = parent1.candidate_number
+    #     offspring.append(NeuralNetwork(parent_number, parent1.input_weights,
+    #                                    parent1.hidden_layer_bias, parent1.output_weights))
 
     while len(offspring) < pop_size:
         parent1 = get_parent_index(parents_fitness)
@@ -167,7 +167,7 @@ def generate_offspring_nn(parents: Generation):
             mutate_nn(new_index, parents[parent1], offspring)
 
         else:
-            offspring.append(NeuralNetwork(new_index))
+            offspring.append(NeuralNetwork(parents[parent1].candidate_number))
 
         index += 1
 
@@ -223,9 +223,9 @@ def generate_offspring_ca(parents: Generation):
     parents.sort_population_by_fitness()
     index = 1
 
-    for i in range(config.data['evolution']['number_of_elites']):
-        parent1 = parents[-1 - i]
-        offspring.append(CellularAutomaton1D(parent1.candidate_number, parent1.rule, parent1.size, parent1.steps))
+    # for i in range(config.data['evolution']['number_of_elites']):
+    #     parent1 = parents[-1 - i]
+    #     offspring.append(CellularAutomaton1D(parent1.candidate_number, parent1.rule, parent1.size, parent1.steps))
 
     while len(offspring) < pop_size:
 

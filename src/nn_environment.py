@@ -65,11 +65,11 @@ for i in range(config.data['evolution']['generations']):
 
     fig.canvas.draw()
     fig.canvas.flush_events()
-    if fitnesses[-1] > target_fitness:
+    if fitnesses[-1] >= target_fitness:
         break
     next_gen = evolution.generate_offspring_nn(generation)
 
-
+write_to_file(generation_history[-1].population[-1].__str__())
 #plt.close(fig)
 env2 = gym.make("CartPole-v1", render_mode="human" )
 while True:
