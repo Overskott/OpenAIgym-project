@@ -102,6 +102,7 @@ class CellularAutomaton1D(Genotype):
             self.rule = rule
 
     def __str__(self):
+        """ Prints the binary array representing the CA's current configuration"""
         return str(self.configuration)
 
     @property
@@ -129,19 +130,48 @@ class CellularAutomaton1D(Genotype):
     def size(self, size: int):
         self._size = size
 
-    def get_history(self):
+    def get_history(self) -> List[np.ndarray]:
         return self.history
 
     def clear_history(self):
+        """ Clears the stored history list"""
         self.history = []
 
-    def encode_staring_state(self, observations: np.ndarray):
-        self.configuration = np.zeros(self.size, dtype='i1')
+    def naive_encoding(self, observations: np.ndarray):
+        """ A simple and inefficient way of encoding gym observables into the CA.
+
+            The observables given are encoded in the middle of the ca.
+
+            NOTE! This function is created for testing and research purpose, and will
+            not yield the best results.
+
+            Args:
+                observations (numpy.ndarray): An array with the four environment observables
+                in the OpenAI CartPole environment. The observables must be in binary value and
+                in this order:
+
+                [Cart position, Cart velocity, Pole angle, Pole angular velocity]
+        """
+        self.configuration = np.zeros(self.size, dtype='u4')
         for i in range(len(observations)):
             self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
 
     def encode_observables(self, observables):
+        """Add up two integer numbers.
 
+            This function simply wraps the ``+`` operator, and does not
+            do anything interesting, except for illustrating what
+            the docstring of a very simple function looks like.
+
+            Args:
+                observables (numpy.ndarray) : The observables to be encoded.
+
+            Returns:
+                The sum of ``num1`` and ``num2``.
+
+            Raises:
+                AnyError: If anything bad happens.
+            """
         size = config.data['cellular_automata']['observation_encoding_size']
         new_state = np.zeros(self.size, dtype='u4')
         gap = round(self.size / len(observables))
@@ -185,17 +215,17 @@ class CellularAutomaton1D(Genotype):
         self.clear_history()
         for i in range(self.steps):
             self.history.append(self.configuration)
-            self.configuration_time_step()
+            self.__configuration_time_step()
 
-    def configuration_time_step(self):
+    def __configuration_time_step(self):
         new_state = np.zeros(self.size, dtype='u4')
 
         for i in range(self.size):
-            new_state[i] = self.cell_time_step(i)
+            new_state[i] = self.__cell_time_step(i)
 
         self.configuration = new_state
 
-    def cell_time_step(self, cell_index):
+    def __cell_time_step(self, cell_index):
 
         neighborhood = self.__get_cell_neighbourhood(cell_index)
         cell_new_value = self.__apply_rule(neighborhood)
@@ -224,40 +254,6 @@ class CellularAutomaton1D(Genotype):
             neighborhood += str(int(cell))
 
         return neighborhood
-
-    # def generate_gene(self) -> List[any]:
-    #     gene_list = [self.configuration, self.rule, self.hood_size]
-    #
-    #     return gene_list
-    #
-    # def parse_gene(self, gene):
-    #     self.configuration = gene[0]
-    #     self.rule = gene[0]
-    #     self.hood_size = gene[2]
-    #     pass
-    #
-    # def showcase_phenotype(self, environment, policy):
-    #     env = environment
-    #     score = 0
-    #     model = self
-    #     observation, _ = env.reset()
-    #
-    #     for _ in range(500):
-    #         action = policy(observation, model)  # User-defined policy function
-    #         observation, reward, terminated, truncated, _ = env.step(action)
-    #
-    #         score += reward
-    #
-    #         if terminated:
-    #             env.reset()
-    #             print(f"Run terminated with score {score}")
-    #             break
-    #         elif truncated:
-    #             env.reset()
-    #             print(f"Run truncated with score {score}")
-    #             break
-    #
-    #     env.close()
 
 
 class NeuralNetwork(Genotype):

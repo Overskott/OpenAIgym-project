@@ -33,7 +33,7 @@ def observables_to_binary(observables):
 
 def observable_to_binary_array(observable: float, low, high,
                                array_size=config.data['cellular_automata']['observation_encoding_size']):
-    """range {-4.8, 4.8}"""
+
     values = np.linspace(low, high, array_size+1)
     binary_array = np.zeros(config.data['cellular_automata']['observation_encoding_size'], dtype='u4')
 

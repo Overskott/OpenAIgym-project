@@ -25,7 +25,7 @@ def naive_control(observation):
 def simple_encoding(observation, model: CellularAutomaton1D):
     ca = model
     obs = utils.observables_to_binary(observation)
-    ca.encode_staring_state(obs)
+    ca.naive_encoding(obs)
     ca.run_time_evolution()
     action = voting_result(ca.configuration)
 
