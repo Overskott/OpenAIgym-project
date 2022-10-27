@@ -60,8 +60,8 @@ for i in range(config.data['evolution']['generations']):
           f"id: {generation[-1].candidate_number}")
 
     best_list.append(fitnesses[-1])
-
-    plt.plot([g.get_population_fitness() for g in generation_history])
+    fitness_list =[g.get_population_fitness() for g in generation_history]
+    plt.plot(fitness_list)
 
     fig.canvas.draw()
     fig.canvas.flush_events()

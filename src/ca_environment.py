@@ -13,21 +13,18 @@ import evolution
 import config
 
 env = gym.make("CartPole-v1",)
-results = [0, 0, 0]
 
-seed = 42
-#np.random.seed(seed)
 generation_history = []
 best_list = []
 best_candidate = CellularAutomaton1D('0-0')
 next_gen = None
 plt.ion()
 fig = plt.figure()
-
+target_fitness = config.data['evolution']['termination_fitness']
 
 for i in range(config.data['evolution']['generations']):
 
-    observation, _ = env.reset(seed=seed)
+    observation, _ = env.reset()
 
     generation = Generation('ca', i + 1, next_gen)
 
@@ -59,6 +56,9 @@ for i in range(config.data['evolution']['generations']):
 
     fig.canvas.draw()
     fig.canvas.flush_events()
+
+    if fitnesses[-1] > target_fitness:
+        break
 
     next_gen = evolution.generate_offspring_ca(generation)
 

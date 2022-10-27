@@ -64,7 +64,7 @@ class CellularAutomaton1D(Genotype):
                  steps: int = None,
                  configuration: np.ndarray = None):
         """ Initializing an instance of the CellularAutomata1D class. Randomizes most of the
-            attributes if none is given.
+            attributes if no value is passed.
 
             Args:
                 candidate_number (str):
@@ -75,7 +75,6 @@ class CellularAutomaton1D(Genotype):
 
         """
         super().__init__()
-
         self.history = []
         self.candidate_number = candidate_number
         self.hood_size = config.data['cellular_automata']['ca_hood_size']
@@ -151,7 +150,8 @@ class CellularAutomaton1D(Genotype):
             if i == 0:
                 b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
             elif i == 2:
-                b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
+                # b_array = utils.observable_to_binary_array(observation, -0.418, 0.418) # -.2095, .2095
+                b_array = utils.observable_to_binary_array(observation, -0.2095, 0.2095)
             else:
                 b_array = utils.observable_to_binary_array(observation, -100, 100)
 
