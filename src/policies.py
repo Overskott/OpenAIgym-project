@@ -1,7 +1,7 @@
+import utils as utils
+import numpy as np
 
 from genotypes import CellularAutomaton1D, NeuralNetwork
-from utils import utils
-import numpy as np
 
 
 def right_control(observation):
@@ -39,6 +39,7 @@ def wide_encoding(observations, model: CellularAutomaton1D):
     action = voting_result(model.configuration)
 
     return action
+
 
 def voting_result(array: np.ndarray):
     result = int(np.round(sum(array)/len(array)))

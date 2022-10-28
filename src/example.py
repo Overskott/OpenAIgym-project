@@ -1,6 +1,6 @@
 import gym
 import policies
-from utils import utils
+from src import utils
 from genotypes import CellularAutomaton1D
 
 rule = utils.int_to_binary(3002457800, 2 ** 5)

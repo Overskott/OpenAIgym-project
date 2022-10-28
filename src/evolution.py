@@ -1,9 +1,11 @@
-import copy
+from typing import List
 
-from genotypes import *
-from utils.utils import *
-from src.generation import Generation
-from src import config
+from genotypes import CellularAutomaton1D, NeuralNetwork
+from generation import Generation
+from utils import binary_to_int
+import config
+
+import numpy as np
 
 
 def random_bitarray(length: int):
@@ -43,46 +45,6 @@ def binary_mutation(parent: np.ndarray):
         parent[mutation_index_row, mutation_index_col] = 1 - parent[mutation_index_row, mutation_index_col]
 
 
-# def crossover(parent_1: np.ndarray, parent_2: np.ndarray):
-#     if parent_1.ndim == 1 and parent_2.ndim == 1:
-#
-#         rule_a, rule_b = one_point_crossover(parent_1, parent_2)
-#         return rule_a, rule_b
-#
-#     else:
-#         params1, params2 = one_point_crossover(parent_1, parent_2)
-#         return params1, params2
-
-    # https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)#Uniform_crossover
-
-
-# def nn_crossover(parent_1: np.ndarray, parent_2: np.ndarray):
-#     if parent_1.size > parent_2.size:
-#         small_parent = parent_2
-#         big_parent = parent_1
-#     else:
-#         small_parent = parent_1
-#         big_parent = parent_2
-#
-#     x, y = small_parent.shape
-#
-#     row_start = np.random.randint(0, x)
-#     row_end = np.random.randint(row_start + 1, x + 1)
-#     col_start = np.random.randint(0, y)
-#     col_end = np.random.randint(col_start + 1, y + 1)
-#
-#     small_gene = small_parent[row_start:row_end, col_start:col_end]
-#     big_gene = big_parent[row_start:row_end, col_start:col_end]
-#
-#     print(small_gene)
-#     print(big_gene)
-#
-#     small_parent[row_start:row_end, col_start:col_end] = big_gene
-#     big_parent[row_start:row_end, col_start:col_end] = small_gene
-#
-#     return small_parent, big_parent
-
-
 def one_point_crossover(parent_1: np.ndarray, parent_2: np.ndarray):
     cross_index = np.random.randint(len(parent_1))
 
@@ -93,7 +55,6 @@ def one_point_crossover(parent_1: np.ndarray, parent_2: np.ndarray):
     p2_gene_b = parent_2[cross_index:]
 
     new_1 = np.concatenate((p1_gene_a, p2_gene_b))
-   # new_2 = np.concatenate((p1_gene_b, p2_gene_a))
     new_2 = np.concatenate((p2_gene_a, p1_gene_b))
     return new_1, new_2
 
@@ -119,13 +80,6 @@ def generate_offspring_nn(parents: Generation):
     mutate_ratio = config.data['evolution']['mutation_rate']
     parents.sort_population_by_fitness()
     index = 1
-
-    # for i in range(config.data['evolution']['number_of_elites']):
-    #     parent1 = parents[-1 - i]
-    #
-    #     parent_number = parent1.candidate_number
-    #     offspring.append(NeuralNetwork(parent_number, parent1.input_weights,
-    #                                    parent1.hidden_layer_bias, parent1.output_weights))
 
     while len(offspring) < pop_size:
         parent1 = get_parent_index(parents_fitness)
@@ -223,10 +177,6 @@ def generate_offspring_ca(parents: Generation):
     parents.sort_population_by_fitness()
     index = 1
 
-    # for i in range(config.data['evolution']['number_of_elites']):
-    #     parent1 = parents[-1 - i]
-    #     offspring.append(CellularAutomaton1D(parent1.candidate_number, parent1.rule, parent1.size, parent1.steps))
-
     while len(offspring) < pop_size:
 
         parent1 = get_parent_index(parents_fitness)
@@ -281,7 +231,7 @@ def mutate_ca(index, parent: CellularAutomaton1D, offspring: List[CellularAutoma
 
 
 def ca_mutate_rule(index, parent, offspring):
-    rule = copy.deepcopy(parent.rule)
+    rule = np.copy(parent.rule)
     binary_mutation(rule)
     offspring.append(CellularAutomaton1D(index,
                                          rule,

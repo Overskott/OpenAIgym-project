@@ -1,26 +1,16 @@
-import numpy as np
-import gym
-import genotypes
-import policies
-from generation import Generation
-
-
-
-
 #
 #  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
 #
 #
 
-import gym
-import matplotlib.pyplot as plt
 import policies
 from generation import Generation
-from utils.utils import *
+from utils import *
 from genotypes import *
 from policies import *
 import config
 import evolution
+
 env = gym.make("CartPole-v1")
 
 generation_history = []
@@ -60,8 +50,10 @@ for i in range(config.data['evolution']['generations']):
           f"id: {generation[-1].candidate_number}")
 
     best_list.append(fitnesses[-1])
-    fitness_list =[g.get_population_fitness() for g in generation_history]
-    plt.plot(fitness_list)
+    fitness_list = [g.get_population_fitness() for g in generation_history]
+
+    plt.plot(best_list)
+    #plt.scatter(range(len(fitness_list)), fitness_list)
 
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -69,7 +61,9 @@ for i in range(config.data['evolution']['generations']):
         break
     next_gen = evolution.generate_offspring_nn(generation)
 
-write_to_file(generation_history[-1].population[-1].__str__())
+#write_to_file(generation_history[-1].population[-1].__str__())
+save_nn_results(generation_history[-1].population[-1].__str__(), fig)
+
 #plt.close(fig)
 env2 = gym.make("CartPole-v1", render_mode="human" )
 while True:

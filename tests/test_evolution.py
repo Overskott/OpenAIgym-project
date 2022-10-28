@@ -1,5 +1,4 @@
 from unittest import TestCase
-from unittest import mock
 import numpy as np
 
 class Test(TestCase):

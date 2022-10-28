@@ -1,9 +1,6 @@
-import copy
-
-from genotypes import *
-from utils.utils import *
+from genotypes import CellularAutomaton1D, NeuralNetwork
 import config
-import evolution
+import numpy as np
 
 
 class Generation(object):
@@ -20,7 +17,7 @@ class Generation(object):
         if population is None:
             self.initialize_population()
         else:
-            self.population = copy.deepcopy(population)
+            self.population = np.copy(population)
 
     def __getitem__(self, i):
         return self.population[i]

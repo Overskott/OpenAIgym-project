@@ -4,10 +4,9 @@
 #
 
 import gym
-import matplotlib.pyplot as plt
 import policies
 from generation import Generation
-from utils.utils import *
+from utils import *
 from genotypes import CellularAutomaton1D
 import evolution
 import config
@@ -18,7 +17,7 @@ generation_history = []
 best_list = []
 best_candidate = CellularAutomaton1D('0-0')
 next_gen = None
-plt.ion()
+#plt.ion()
 fig = plt.figure()
 target_fitness = config.data['evolution']['termination_fitness']
 
@@ -31,8 +30,9 @@ for i in range(config.data['evolution']['generations']):
     for phenotype in generation.population:
         phenotype.find_phenotype_fitness(env, policies.wide_encoding)
         #print(f"Phenotype fitness: {phenotype.get_fitness()}")
-        #plt.imshow(phenotype.get_history(), cmap='gray')
-        #plt.show()
+        if phenotype.get_fitness() > 200:
+            plt.imshow(phenotype.get_history(), cmap='gray')
+            plt.show()
 
     generation_history.append(generation)
     generation.sort_population_by_fitness()
@@ -52,17 +52,19 @@ for i in range(config.data['evolution']['generations']):
 
     best_list.append(fitnesses[-1])
 
-    plt.plot([g.get_population_fitness() for g in generation_history])
+    #plt.plot(best_list)
 
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+    #fig.canvas.draw()
+    #fig.canvas.flush_events()
 
     if fitnesses[-1] > target_fitness:
         break
 
     next_gen = evolution.generate_offspring_ca(generation)
 
-env2 = gym.make("CartPole-v1", render_mode="human" )
+save_ca_results(generation_history[-1].population[-1].__str__(), fig)
+
+env2 = gym.make("CartPole-v1", render_mode="human")
 while True:
 
     max_steps = 500

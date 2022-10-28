@@ -2,6 +2,8 @@ import numpy as np
 import config
 import os
 from pathlib import Path
+import matplotlib.pyplot as plt
+
 
 def binary_to_int(array: np.ndarray):
     """Converting a numpy array with binary values to decimal integer"""
@@ -12,7 +14,7 @@ def binary_to_int(array: np.ndarray):
 
 
 def int_to_binary(value: int, length: int) -> np.ndarray:
-    """ Converting a decimal integer to a numpy array with binary values"""
+    """ Converting a decimal integer to a binary number as a numpy array with binary values"""
     binary_string = format(value, f"0{length}b")
     binary_array = np.array([int(x) for x in binary_string])
 
@@ -78,24 +80,54 @@ def array_to_input_string(array):
     return output_string
 
 
-def write_to_file(text):
-
+def save_nn_results(text, figure=None):
+    time_finished = get_date_and_time()
+    folder_name = f"NN results {time_finished}"
     current_path = Path.cwd()
-    file_name = f"{get_date_and_time()}.txt"
     parent_dir = current_path.parents[0]
+
     result_folder_path = parent_dir / 'results'
-    print(result_folder_path.joinpath(file_name))
-    # check if directory exists
-    if result_folder_path.is_dir():
-        with open(result_folder_path.joinpath(file_name), 'w') as f:
-            f.write(text)
-        print('File created')
+
+    create_run_result_folder(folder_name, result_folder_path)
+    write_to_file(text, folder_name, result_folder_path, folder_name)
+
+    if figure is not None:
+        plt.savefig(result_folder_path / folder_name / f'{figure}.png')
+
+
+def save_ca_results(text, figure=None):
+    time_finished = get_date_and_time()
+    folder_name = f"CA results {time_finished}"
+    current_path = Path.cwd()
+    parent_dir = current_path.parents[0]
+
+    result_folder_path = parent_dir / 'results'
+
+    create_run_result_folder(folder_name, result_folder_path)
+    write_to_file(text, folder_name, result_folder_path, folder_name)
+
+    if figure is not None:
+        plt.savefig(result_folder_path / folder_name / f'{figure}.png')
+
+
+def create_run_result_folder(folder_name, folder_path):
+
+    if folder_path.is_dir():
+        os.makedirs(folder_path / folder_name)
     else:
-        os.makedirs(result_folder_path)
+        os.makedirs(folder_path)
         print('Directory doesn\'t exist')
-        print(f'Creating {result_folder_path}')
-        print(f"Directory created")
-        with open(result_folder_path.joinpath(file_name), 'w') as f:
-            f.write(text)
-        print('File created')
+        print(f'Creating {folder_path}')
+
+        os.makedirs(folder_path / folder_name)
+
+
+def write_to_file(text, file_name, folder_dir, folder_name):
+
+    file_name = f"{file_name}.txt"
+    result_folder_path = folder_dir / folder_name
+
+    with open(result_folder_path.joinpath(file_name), 'w') as f:
+        f.write(text)
+
 

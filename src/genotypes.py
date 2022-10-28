@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List
 import copy
-
 import gym
 import numpy as np
 
 import config
-import utils.utils as utils
+import utils
 
 
 class Genotype(ABC):
@@ -62,7 +61,8 @@ class CellularAutomaton1D(Genotype):
                  rule: np.ndarray = None,
                  size: int = None,
                  steps: int = None,
-                 configuration: np.ndarray = None):
+                 configuration: np.ndarray = None,
+                 hood_size = None):
         """ Initializing an instance of the CellularAutomata1D class. Randomizes most of the
             attributes if no value is passed.
 
@@ -77,7 +77,11 @@ class CellularAutomaton1D(Genotype):
         super().__init__()
         self.history = []
         self.candidate_number = candidate_number
-        self.hood_size = config.data['cellular_automata']['ca_hood_size']
+
+        if hood_size is None:
+            self.hood_size = config.data['cellular_automata']['ca_hood_size']
+        else:
+            self.hood_size = hood_size
 
         if size is None or size == 0:
             self.size = np.random.randint(config.data['cellular_automata']['ca_size_low'],
@@ -103,7 +107,12 @@ class CellularAutomaton1D(Genotype):
 
     def __str__(self):
         """ Prints the binary array representing the CA's current configuration"""
-        return str(self.configuration)
+        return f"Cellular Automata ID: {self.candidate_number}, size: {self.size}, steps: {self.steps}, " \
+               f"Neighborhood size: {self.hood_size}, Rule: {self.rule}\n" \
+               f"\nParameters: \n" \
+               f"{config.data['evolution']}\n" \
+               f"{config.data['cellular_automata']}\n" \
+
 
     @property
     def configuration(self) -> np.ndarray:
@@ -180,7 +189,7 @@ class CellularAutomaton1D(Genotype):
             if i == 0:
                 b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
             elif i == 2:
-                # b_array = utils.observable_to_binary_array(observation, -0.418, 0.418) # -.2095, .2095
+                # b_array = utils.observable_to_binary_array(observation, -0.418, 0.418)
                 b_array = utils.observable_to_binary_array(observation, -0.2095, 0.2095)
             else:
                 b_array = utils.observable_to_binary_array(observation, -100, 100)
@@ -280,7 +289,6 @@ class NeuralNetwork(Genotype):
                  output_weights: np.ndarray = None):
 
         super().__init__()
-
 
         if input_weights is None:
             self.input_weights = np.random.normal(-1, 1, (4, config.data['neural_network']['hidden_layer_size']))
