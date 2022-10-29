@@ -21,10 +21,18 @@ def int_to_binary(value: int, length: int) -> np.ndarray:
     return binary_array
 
 
-def observables_to_binary(observables):
-    """Observables = [position, velocity, angle, angular_momentum]"""
-    state = np.zeros(len(observables), dtype='u4')
-    for i, observable in enumerate(observables):
+def observables_to_binary(observations):
+    """ Takes cartpole observations and encode them into a binary array to use as initial condition for a CA.
+
+        Args:
+            observations (numpy.nd.array): The cartpole environment observations
+            [position, velocity, angle, angular_momentum]
+
+        Returns:
+              (numpy.ndarray): THe observations encoded into a CA initial state.
+        """
+    state = np.zeros(len(observations), dtype='u4')
+    for i, observable in enumerate(observations):
         if i == 0 and np.abs(observable) > 0.5:
             state[i] = 1
         elif observable >= 0:

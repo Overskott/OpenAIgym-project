@@ -34,7 +34,7 @@ def simple_encoding(observation, model: CellularAutomaton1D):
 
 def wide_encoding(observations, model: CellularAutomaton1D):
 
-    model.encode_observables(observations)
+    model.encode_observations(observations)
     model.run_time_evolution()
     action = voting_result(model.configuration)
 

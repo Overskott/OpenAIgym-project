@@ -43,14 +43,14 @@ class Genotype(ABC):
 
 
 class CellularAutomaton1D(Genotype):
-    """ Class for instantiating genotypes as 1-dimensional cellular automata.
+    """ Class for instantiating phenotypes as 1-dimensional cellular automata.
 
         This class contains all the parameters and functions for creating and running a 1-dimensional CA to evolve
         a solution to the OpenAi pole cart challenge.
 
         Attributes:
             history (List[CellularAutomata1D]): A list of the CA evolution for each step.
-            candidate_number (str): First number to add.
+            candidate_number (str): Phenotype identifier.
             rule (numpy.ndarray): Array containing the rules for the CA to follow.
             size (int): The size, or width of the CA. Can also be interpreted as number of cells.
             steps (int): Number of steps the CA will run.
@@ -63,15 +63,15 @@ class CellularAutomaton1D(Genotype):
                  steps: int = None,
                  configuration: np.ndarray = None,
                  hood_size = None):
-        """ Initializing an instance of the CellularAutomata1D class. Randomizes most of the
-            attributes if no value is passed.
+        """ Initializing an instance of the CellularAutomata1D class. Randomizes the
+            attributes if no attribute value is passed (except candidate_number).
 
             Args:
-                candidate_number (str):
-                rule (numpy.ndarray):
-                size (int):
-                steps (int):
-                configuration (numpy.ndarray):
+                candidate_number (str): String to identify phenotype in an evolution.
+                rule (numpy.ndarray): The rule to be applied by the cellular automaton
+                size (int): The number of cells in th 1D CA.
+                steps (int): Number of time steps the CA evolution will take before terminating.
+                configuration (numpy.ndarray): The current state of the CA
 
         """
         super().__init__()
@@ -106,7 +106,7 @@ class CellularAutomaton1D(Genotype):
             self.rule = rule
 
     def __str__(self):
-        """ Prints the binary array representing the CA's current configuration"""
+        """ Prints the binary array representing the CA's current configuration and parameters"""
         return f"Cellular Automata ID: {self.candidate_number}, size: {self.size}, steps: {self.steps}, " \
                f"Neighborhood size: {self.hood_size}, Rule: {self.rule}\n" \
                f"\nParameters: \n" \
@@ -146,17 +146,18 @@ class CellularAutomaton1D(Genotype):
         """ Clears the stored history list"""
         self.history = []
 
+    @DeprecationWarning
     def naive_encoding(self, observations: np.ndarray):
-        """ A simple and inefficient way of encoding gym observables into the CA.
+        """ A simple and inefficient way of encoding gym observations into the CA.
 
-            The observables given are encoded in the middle of the ca.
+            The observations given are encoded in the middle of the ca.
 
             NOTE! This function is created for testing and research purpose, and will
             not yield the best results.
 
             Args:
-                observations (numpy.ndarray): An array with the four environment observables
-                in the OpenAI CartPole environment. The observables must be in binary value and
+                observations (numpy.ndarray): An array with the four environment observations
+                in the OpenAI CartPole environment. The observations must be in binary value and
                 in this order:
 
                 [Cart position, Cart velocity, Pole angle, Pole angular velocity]
@@ -165,27 +166,19 @@ class CellularAutomaton1D(Genotype):
         for i in range(len(observations)):
             self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
 
-    def encode_observables(self, observables):
-        """Add up two integer numbers.
+    def encode_observations(self, observations):
+        """ Most efficient observations encoding scheme.
 
-            This function simply wraps the ``+`` operator, and does not
-            do anything interesting, except for illustrating what
-            the docstring of a very simple function looks like.
+            Encodes the observations into the configuration based on size.
 
             Args:
-                observables (numpy.ndarray) : The observables to be encoded.
-
-            Returns:
-                The sum of ``num1`` and ``num2``.
-
-            Raises:
-                AnyError: If anything bad happens.
+                observations (numpy.ndarray) : The observations to be encoded.
             """
         size = config.data['cellular_automata']['observation_encoding_size']
         new_state = np.zeros(self.size, dtype='u4')
-        gap = round(self.size / len(observables))
+        gap = round(self.size / len(observations))
 
-        for i, observation in enumerate(observables):
+        for i, observation in enumerate(observations):
             if i == 0:
                 b_array = utils.observable_to_binary_array(observation, -4.8, 4.8)
             elif i == 2:
@@ -199,6 +192,12 @@ class CellularAutomaton1D(Genotype):
         self.configuration = new_state
 
     def find_phenotype_fitness(self, environment: gym.Env, policy):
+        """ Tests the instance in the cartpole environment and updates its fitness score.
+
+            Args:
+                environment (gym.Env): Gym environment for the instance to be tested in.
+                policy (Func): The policy to be tested.
+        """
         score = 0
         repeats = config.data['evolution']['test_rounds']
         for step in range(repeats):
@@ -221,12 +220,14 @@ class CellularAutomaton1D(Genotype):
         environment.close()
 
     def run_time_evolution(self):
+        """ The complete time evolution of the CA. Updates configuration."""
         self.clear_history()
         for i in range(self.steps):
             self.history.append(self.configuration)
             self.__configuration_time_step()
 
     def __configuration_time_step(self):
+        """Updates the whole CA one time step. Updates configuration."""
         new_state = np.zeros(self.size, dtype='u4')
 
         for i in range(self.size):
@@ -234,20 +235,43 @@ class CellularAutomaton1D(Genotype):
 
         self.configuration = new_state
 
-    def __cell_time_step(self, cell_index):
+    def __cell_time_step(self, cell_index) -> int:
+        """ Updates given cell in the CA on time step.
 
+            Args:
+                cell_index (int): The index in the array to be updated.
+
+            Returns:
+                (int): The new cell value {0,1}
+        """
         neighborhood = self.__get_cell_neighbourhood(cell_index)
-        cell_new_value = self.__apply_rule(neighborhood)
+        cell_new_value = self.__state_transition_function(neighborhood)
 
         return cell_new_value
 
-    def __apply_rule(self, neighborhood):
+    def __state_transition_function(self, neighborhood: str) -> int:
+        """ Checks the given neighborhood against the rule attribute and returns its value
+
+            Args:
+                neighborhood (str): Binary representation of the cell neighborhood.
+
+            Returns:
+                (int): The cell value after applying its rule
+        """
         hood_binary_value = int(neighborhood, 2)
         new_cell_value = int(self.rule[hood_binary_value])
 
         return new_cell_value
 
     def __get_cell_neighbourhood(self, cell_index: int) -> str:
+        """ Find the neighborhood of the cell at given index. This is a Periodic boundary space.
+
+            Args:
+                cell_index (int): Index of cell to find neighborhood of.
+
+            Returns:
+                (str): A binary string representation of the neighborhood.
+        """
         neighborhood = ""
 
         ca_array = np.concatenate((self.configuration[-self.hood_size:],
@@ -266,28 +290,31 @@ class CellularAutomaton1D(Genotype):
 
 
 class NeuralNetwork(Genotype):
-    """Add up two integer numbers.
+    """ Class for instantiating phenotypes as artificial neural networks.
 
-        This function simply wraps the ``+`` operator, and does not
-        do anything interesting, except for illustrating what
-        the docstring of a very simple function looks like.
+        This class contains all the parameters and functions for creating and running a neural network to evolve
+        a solution to the OpenAi pole cart challenge. n is the number of nodes in the hidden layer.
 
-        Args:
-            num1 (int) : First number to add.
-            num2 (int) : Second number to add.
-
-        Returns:
-            The sum of ``num1`` and ``num2``.
-
-        Raises:
-            AnyError: If anything bad happens.
+        Attributes:
+            candidate_number (str): Phenotype identifier.
+            input_layer (numpy.ndarray): The input to the NN (dim(1, 4))
+            input_weights (numpy.ndarray): Weights between input and hidden layer (dim(4, n)).
+            hidden_layer_bias (numpy. ndarray): The hidden layer bias (dim(1, n)).
+            output_weights (numpy.ndarray): weights between hidden layer and output layer (dim(n, 1)).
         """
     def __init__(self,
                  candidate_number: str,
                  input_weights: np.ndarray = None,
                  hidden_layer_bias: np.ndarray = None,
                  output_weights: np.ndarray = None):
+        """ Initializing a NeuralNetwork instance. Radomizes attribures if none is given (except from candidate_number)
 
+            Args:
+                candidate_number (str): Phenotype identifier.
+                input_weights (numpy.ndarray): Weights between input and hidden layer (dim(4, n)).
+                hidden_layer_bias (numpy. ndarray): The hidden layer bias (dim(1,n)).
+                output_weights (numpy.ndarray): weights between hidden layer and output layer (dim(n,1)).
+        """
         super().__init__()
 
         if input_weights is None:
@@ -307,9 +334,9 @@ class NeuralNetwork(Genotype):
 
         self.candidate_number = candidate_number
         self.input_layer = np.zeros((1, 4))
-        self.fitness = 0
 
     def __str__(self):
+        """ Prints the arrays representing the NN's current configuration and parameters"""
         return f"NeuralNetwork ID: {self.candidate_number}, Fitness: {self.fitness}\n" \
                f"\nParameters: {config.data['evolution']}\n" \
                f"{config.data['neural_network']}\n" \
@@ -345,13 +372,23 @@ class NeuralNetwork(Genotype):
         self.input_layer = copy.deepcopy(input_array)
 
     def calculate_output_value(self) -> float:
+        """ Calculates and returns the output of the NN given the input.
 
+            Returns:
+                (float): The NN output value
+        """
         hidden_layer = np.dot(self.input_layer, self.input_weights) + self.hidden_layer_bias
         output_value = np.dot(hidden_layer, self.output_weights)
 
         return np.float(output_value)
 
     def find_phenotype_fitness(self, environment: gym.Env, policy):
+        """ Tests the instance in the cartpole environment and updates its fitness score.
+
+                    Args:
+                        environment (gym.Env): Gym environment for the instance to be tested in.
+                        policy (Func): The policy to be tested.
+                """
         score = 0
         repeats = config.data['evolution']['test_rounds']
         for step in range(repeats):
@@ -370,5 +407,3 @@ class NeuralNetwork(Genotype):
                     break
 
             self.set_fitness(np.round(score / repeats))
-
-
