@@ -1,25 +1,38 @@
 from typing import List
 
-from genotypes import CellularAutomaton1D, NeuralNetwork
-from generation import Generation
-from utils import binary_to_int
-import config
+from src.genotypes import CellularAutomaton1D, NeuralNetwork
+from src.generation import Generation
+from src.utils import binary_to_int
+import src.config as config
 
 import numpy as np
 
 
-def random_bitarray(length: int):
+def random_binary_array(length: int):
+    """ Returns an array of size given as parameter with random values of {0, 1}"""
     return np.random.randint(0, 2, length, dtype='u4')
 
 
-def get_parent_index(parents: np.ndarray):
-    # norm_parents = parents/sum(parents)
-    norm_parents = (parents ** 2) / (sum(parents ** 2))
+def get_parent_index(parent_fitness_array: np.ndarray):
+    """ """
+    norm_fitness = normalize_array_squared(parent_fitness_array)
+    return roulette_wheel_selector(norm_fitness)
+
+
+def normalize_array(input_array: np.ndarray) -> np.ndarray:
+    return input_array/np.sum(input_array)
+
+
+def normalize_array_squared(input_array: np.ndarray) -> np.ndarray:
+    return input_array**2/np.sum(input_array**2)
+
+
+def roulette_wheel_selector(selection_array: np.ndarray) -> int:
     check = np.random.rand()
     prob = 0
 
-    for i, parent in enumerate(norm_parents):
-        prob += parent
+    for i, candidate in enumerate(selection_array):
+        prob += candidate
         if check < prob:
             return i
 

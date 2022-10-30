@@ -1,5 +1,5 @@
 import numpy as np
-import config
+import src.config as config
 import os
 from pathlib import Path
 import matplotlib.pyplot as plt

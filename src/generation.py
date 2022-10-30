@@ -1,15 +1,26 @@
-from genotypes import CellularAutomaton1D, NeuralNetwork
-import config
+from src.genotypes import CellularAutomaton1D, NeuralNetwork
+import src.config as config
 import numpy as np
 
 
 class Generation(object):
+    """ A class for managing and organizing phenotypes in a generation.
+
+        Attributes:
+            genotype (str): The type of genotype to populate the generation.
+            generation_number (str): The generation identificatior
+            generation_size (int): Number of phenotypes in the generation.
     """
 
-
-    """
     def __init__(self, genotype, id_number, population=None):
+        """ Initializing a Generation instance.
 
+            Args:
+                genotype (str): Type of phenotype in the generation. 'ca' for CA
+                or 'nn' for NN is accepted.
+                generation_number (str): An identificator for the generation.
+                generation_size (int): Number of individuals in the generation
+        """
         self.genotype = genotype
         self.generation_number = id_number
         self.generation_size = config.data['evolution']['generation_size']
@@ -34,6 +45,7 @@ class Generation(object):
         self._genotype = genotype
 
     def initialize_population(self):
+        """ Generates an initial population"""
         population = []
 
         if self.genotype == 'ca':
@@ -50,9 +62,11 @@ class Generation(object):
         self.population = population
 
     def get_population_fitness(self):
+        """ Return a list of each phenotype's fitness"""
         return np.asarray([phenotype.get_fitness() for phenotype in self.population])
 
     def sort_population_by_fitness(self):
+        """ Order the individuals in population from lowest to highest fitness"""
         fitness_dict = {f: f.get_fitness() for f in self.population}
         sorted_dict = sorted(fitness_dict.items(), key=lambda x: x[1])
         self.population = [c[0] for c in sorted_dict]

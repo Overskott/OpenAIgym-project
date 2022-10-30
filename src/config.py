@@ -1,3 +1,4 @@
+# Script for loading the config.json file.
 import json
 from pathlib import Path
 

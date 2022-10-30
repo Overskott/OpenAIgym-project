@@ -4,8 +4,8 @@ import copy
 import gym
 import numpy as np
 
-import config
-import utils
+import src.config as config
+import src.utils as utils
 
 
 class Genotype(ABC):
@@ -62,7 +62,8 @@ class CellularAutomaton1D(Genotype):
                  size: int = None,
                  steps: int = None,
                  configuration: np.ndarray = None,
-                 hood_size = None):
+                 hood_size: int = None):
+
         """ Initializing an instance of the CellularAutomata1D class. Randomizes the
             attributes if no attribute value is passed (except candidate_number).
 
@@ -307,7 +308,7 @@ class NeuralNetwork(Genotype):
                  input_weights: np.ndarray = None,
                  hidden_layer_bias: np.ndarray = None,
                  output_weights: np.ndarray = None):
-        """ Initializing a NeuralNetwork instance. Radomizes attribures if none is given (except from candidate_number)
+        """ Initializing a NeuralNetwork instance. Randomizes the attributes if none is given (except from candidate_number)
 
             Args:
                 candidate_number (str): Phenotype identifier.
