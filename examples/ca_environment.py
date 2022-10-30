@@ -1,15 +1,11 @@
-#
-#  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
-#
-#
-
 import gym
-import policies
-from generation import Generation
-from utils import *
-from genotypes import CellularAutomaton1D
-import evolution
-import config
+import src.policies as policies
+from src.generation import Generation
+from src.utils import *
+from src.genotypes import CellularAutomaton1D
+import src.evolution as evolution
+import src.config as config
+
 
 env = gym.make("CartPole-v1",)
 
@@ -28,7 +24,7 @@ for i in range(config.data['evolution']['generations']):
     generation = Generation('ca', i + 1, next_gen)
 
     for phenotype in generation.population:
-        phenotype.find_phenotype_fitness(env, policies.wide_encoding)
+        phenotype.find_phenotype_fitness(env, policies.ca_wide_encoding)
         #print(f"Phenotype fitness: {phenotype.get_fitness()}")
         if phenotype.get_fitness() > 200:
             plt.imshow(phenotype.get_history(), cmap='gray')
@@ -73,7 +69,7 @@ while True:
 
     for i in range(max_steps):
 
-        action = policies.wide_encoding(observation, best_candidate)  # User-defined policy function
+        action = policies.ca_wide_encoding(observation, best_candidate)  # User-defined policy function
         observation, reward, terminated, truncated, _ = env2.step(action)
         score += reward
 

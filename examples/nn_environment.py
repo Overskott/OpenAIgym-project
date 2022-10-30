@@ -1,15 +1,10 @@
-#
-#  https://www.gymlibrary.dev/environments/classic_control/cart_pole/
-#
-#
-
-import policies
-from generation import Generation
-from utils import *
-from genotypes import *
-from policies import *
-import config
-import evolution
+import src.policies as policies
+from src.generation import Generation
+from src.utils import *
+from src.genotypes import *
+from src.policies import *
+import src.config as config
+import src.evolution as evolution
 
 env = gym.make("CartPole-v1")
 
