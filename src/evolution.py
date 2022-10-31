@@ -23,6 +23,7 @@ def normalize_array(input_array: np.ndarray) -> np.ndarray:
     return input_array/np.sum(input_array)
 
 
+@DeprecationWarning
 def normalize_array_squared(input_array: np.ndarray) -> np.ndarray:
     return input_array**2/np.sum(input_array**2)
 
@@ -42,9 +43,11 @@ def mutation(parent: np.ndarray):
         mutation_index = np.random.randint(parent.size)
         parent[mutation_index] = np.random.normal(-1, 1, size=1)
     else:
-        mutation_index_row = np.random.randint(parent.shape[0])
-        mutation_index_col = np.random.randint(parent.shape[1])
-        parent[mutation_index_row, mutation_index_col] = np.random.normal(-1, 1, size=1)
+        for i in range(np.size(parent) // 3):
+            # Mutate 1/3 of the matrix entries
+            mutation_index_row = np.random.randint(parent.shape[0])
+            mutation_index_col = np.random.randint(parent.shape[1])
+            parent[mutation_index_row, mutation_index_col] = np.random.normal(-1, 1, size=1)
 
 
 def binary_mutation(parent: np.ndarray):
@@ -53,9 +56,11 @@ def binary_mutation(parent: np.ndarray):
         parent[mutation_index] = 1 - parent[mutation_index]
 
     else:
-        mutation_index_row = np.random.randint(parent.shape[0])
-        mutation_index_col = np.random.randint(parent.shape[1])
-        parent[mutation_index_row, mutation_index_col] = 1 - parent[mutation_index_row, mutation_index_col]
+        for i in range(np.size(parent)//3):
+            # Mutate 1/3 of the matrix entries
+            mutation_index_row = np.random.randint(parent.shape[0])
+            mutation_index_col = np.random.randint(parent.shape[1])
+            parent[mutation_index_row, mutation_index_col] = 1 - parent[mutation_index_row, mutation_index_col]
 
 
 def one_point_crossover(parent_1: np.ndarray, parent_2: np.ndarray):
@@ -111,14 +116,18 @@ def generate_offspring_nn(parents: Generation):
             new_input_weights_1, new_input_weights_2 = uniform_crossover(parents[parent1].input_weights,
                                                                          parents[parent2].input_weights)
 
-            new_hidden_layer_bias_1, new_hidden_layer_bias_2 = uniform_crossover(parents[parent1].hidden_layer_bias,
-                                                                                 parents[parent2].hidden_layer_bias)
+            new_input_bias_1, new_input_bias_2 = uniform_crossover(parents[parent1].input_bias,
+                                                                   parents[parent2].input_bias)
+
+            new_hidden_layer_bias_1, new_hidden_layer_bias_2 = uniform_crossover(parents[parent1].hidden_bias,
+                                                                                 parents[parent2].hidden_bias)
 
             new_output_weights_1, new_output_weights_2 = uniform_crossover(parents[parent1].output_weights,
                                                                            parents[parent2].output_weights)
 
             offspring.append(NeuralNetwork(new_index,
                                            new_input_weights_1,
+                                           new_input_bias_1,
                                            new_hidden_layer_bias_1,
                                            new_output_weights_1))
 
@@ -127,6 +136,7 @@ def generate_offspring_nn(parents: Generation):
 
             offspring.append(NeuralNetwork(new_index,
                                            new_input_weights_2,
+                                           new_input_bias_2,
                                            new_hidden_layer_bias_2,
                                            new_output_weights_2))
 
@@ -148,7 +158,10 @@ def mutate_nn(index, parent: NeuralNetwork, offspring: List[NeuralNetwork]):
         mutate_input_weights(index, parent, offspring)
 
     elif selector == 1:
-        mutate_hidden_layer_bias(index, parent, offspring)
+        mutate_hidden_bias(index, parent, offspring)
+
+    elif selector == 2:
+        mutate_input_bias(index, parent, offspring)
 
     else:
         mutate_output_weights(index, parent, offspring)
@@ -159,15 +172,17 @@ def mutate_input_weights(index, parent, offspring):
     mutation(weights)
     offspring.append(NeuralNetwork(index,
                                    weights,
-                                   parent.hidden_layer_bias,
+                                   parent.input_bias,
+                                   parent.hidden_bias,
                                    parent.output_weights))
 
 
-def mutate_hidden_layer_bias(index, parent, offspring):
-    bias = np.copy(parent.hidden_layer_bias)
+def mutate_hidden_bias(index, parent, offspring):
+    bias = np.copy(parent.hidden_bias)
     mutation(bias)
     offspring.append(NeuralNetwork(index,
                                    parent.input_weights,
+                                   parent.input_bias,
                                    bias,
                                    parent.output_weights))
 
@@ -177,8 +192,19 @@ def mutate_output_weights(index, parent, offspring):
     mutation(weights)
     offspring.append(NeuralNetwork(index,
                                    parent.input_weights,
-                                   parent.hidden_layer_bias,
+                                   parent.input_bias,
+                                   parent.hidden_bias,
                                    weights))
+
+
+def mutate_input_bias(index, parent, offspring):
+    bias = np.copy(parent.input_bias)
+    mutation(bias)
+    offspring.append(NeuralNetwork(index,
+                                   parent.input_weights,
+                                   bias,
+                                   parent.hidden_bias,
+                                   parent.output_weights))
 
 
 def generate_offspring_ca(parents: Generation):

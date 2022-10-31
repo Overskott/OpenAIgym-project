@@ -300,20 +300,21 @@ class NeuralNetwork(Genotype):
             candidate_number (str): Phenotype identifier.
             input_layer (numpy.ndarray): The input to the NN (dim(1, 4))
             input_weights (numpy.ndarray): Weights between input and hidden layer (dim(4, n)).
-            hidden_layer_bias (numpy. ndarray): The hidden layer bias (dim(1, n)).
+            hidden_bias (numpy. ndarray): The hidden layer bias (dim(1, n)).
             output_weights (numpy.ndarray): weights between hidden layer and output layer (dim(n, 1)).
         """
     def __init__(self,
                  candidate_number: str,
                  input_weights: np.ndarray = None,
-                 hidden_layer_bias: np.ndarray = None,
+                 input_bias: np.ndarray = None,
+                 hidden_bias: np.ndarray = None,
                  output_weights: np.ndarray = None):
         """ Initializing a NeuralNetwork instance. Randomizes the attributes if none is given (except from candidate_number)
 
             Args:
                 candidate_number (str): Phenotype identifier.
                 input_weights (numpy.ndarray): Weights between input and hidden layer (dim(4, n)).
-                hidden_layer_bias (numpy. ndarray): The hidden layer bias (dim(1,n)).
+                hidden_bias (numpy. ndarray): The hidden layer bias (dim(1,n)).
                 output_weights (numpy.ndarray): weights between hidden layer and output layer (dim(n,1)).
         """
         super().__init__()
@@ -323,10 +324,15 @@ class NeuralNetwork(Genotype):
         else:
             self.input_weights = input_weights
 
-        if hidden_layer_bias is None:
-            self.hidden_layer_bias = np.random.normal(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+        if input_bias is None:
+            self.input_bias = np.random.normal(-1, 1, (1, 4))
         else:
-            self.hidden_layer_bias = hidden_layer_bias
+            self.input_bias = input_bias
+
+        if hidden_bias is None:
+            self.hidden_bias = np.random.normal(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+        else:
+            self.hidden_bias = hidden_bias
 
         if output_weights is None:
             self.output_weights = np.random.normal(-1, 1, (config.data['neural_network']['hidden_layer_size'], 1))
@@ -334,7 +340,7 @@ class NeuralNetwork(Genotype):
             self.output_weights = output_weights
 
         self.candidate_number = candidate_number
-        self.input_layer = np.zeros((1, 4))
+        self.input_values = np.zeros((1, 4))
 
     def __str__(self):
         """ Prints the arrays representing the NN's current configuration and parameters"""
@@ -342,8 +348,10 @@ class NeuralNetwork(Genotype):
                f"\nParameters: {config.data['evolution']}\n" \
                f"{config.data['neural_network']}\n" \
                f"\nInput Weights:\n{utils.array_to_input_string(self.input_weights)}\n" \
-               f"\nHidden Layer Bias:\n{utils.array_to_input_string(self.hidden_layer_bias)}\n" \
+               f"\nInput Bias:\n{utils.array_to_input_string(self.input_bias)}" \
+               f"\nHidden Bias:\n{utils.array_to_input_string(self.hidden_bias)}\n" \
                f"\nOutput_weights:\n{utils.array_to_input_string(self.output_weights)}" \
+
 
     @property
     def input_weights(self) -> np.ndarray:
@@ -354,11 +362,19 @@ class NeuralNetwork(Genotype):
         self._input_weights = weights
 
     @property
-    def hidden_layer_bias(self) -> np.ndarray:
+    def input_bias(self) -> np.ndarray:
+        return self._input_bias
+
+    @input_bias.setter
+    def input_bias(self, input_bias):
+        self._input_bias = input_bias
+
+    @property
+    def hidden_bias(self) -> np.ndarray:
         return self._hidden_layer_bias
 
-    @hidden_layer_bias.setter
-    def hidden_layer_bias(self, bias: np.ndarray):
+    @hidden_bias.setter
+    def hidden_bias(self, bias: np.ndarray):
         self._hidden_layer_bias = bias
 
     @property
@@ -370,7 +386,7 @@ class NeuralNetwork(Genotype):
         self._output_weights = weights
 
     def set_input_values(self, input_array: np.ndarray):
-        self.input_layer = copy.deepcopy(input_array)
+        self.input_values = copy.deepcopy(input_array)
 
     def calculate_output_value(self) -> float:
         """ Calculates and returns the output of the NN given the input.
@@ -378,7 +394,8 @@ class NeuralNetwork(Genotype):
             Returns:
                 (float): The NN output value
         """
-        hidden_layer = np.dot(self.input_layer, self.input_weights) + self.hidden_layer_bias
+        input_layer = self.input_values + self.input_bias
+        hidden_layer = np.dot(input_layer, self.input_weights) + self.hidden_bias
         output_value = np.dot(hidden_layer, self.output_weights)
 
         return np.float(output_value)

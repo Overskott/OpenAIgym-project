@@ -10,17 +10,7 @@ mid = size//2
 #conf[mid-1] = 1
 conf[mid] = 1
 #conf[mid+1] = 0
-
-while True:
-    ca = CellularAutomaton1D('test', hood_size=3, size=size, configuration=conf, steps=size, rule=int_to_binary(90, 2**3))
-
-
-    ca.run_time_evolution()
-
-
-    plt.imshow(ca.history, cmap='gray', interpolation='nearest')
-    plt.show()
-
+print(np.size(np.array([[1,2],[3,4],[5,6]])))
 #
 # fit = np.array([236.0,
 # 243.0,

@@ -1,9 +1,9 @@
 {
   "evolution": {
     "generations": 200,
-    "generation_size": 10,
-    "test_rounds": 2,
-    "crossover_rate": 0.4,
+    "generation_size": 100,
+    "test_rounds": 10,
+    "crossover_rate": 0.8,
     "mutation_rate": 0.1,
     "termination_fitness": 300
   },
@@ -16,6 +16,6 @@
     "observation_encoding_size": 8
   },
   "neural_network": {
-    "hidden_layer_size": 15
+    "hidden_layer_size": 30
   }
 }
