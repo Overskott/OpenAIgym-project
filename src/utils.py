@@ -103,7 +103,7 @@ def save_nn_results(text, figure=None):
         plt.savefig(result_folder_path / folder_name / f'{figure}.png')
 
 
-def save_ca_results(text, figure=None):
+def save_ca_results(text, figure=None, figure2=None):
     time_finished = get_date_and_time()
     folder_name = f"CA results {time_finished}"
     current_path = Path.cwd()
@@ -115,7 +115,23 @@ def save_ca_results(text, figure=None):
     write_to_file(text, folder_name, result_folder_path, folder_name)
 
     if figure is not None:
+        plt.figure(figure)
         plt.savefig(result_folder_path / folder_name / f'{figure}.png')
+
+    if figure2 is not None:
+        plt.figure(figure2)
+        plt.savefig(result_folder_path / folder_name / f'{figure2}.png')
+
+
+def save_figure(figure, fig_name):
+    time_finished = get_date_and_time()
+    folder_name = f"CA results {time_finished}"
+    current_path = Path.cwd()
+    parent_dir = current_path.parents[0]
+
+    result_folder_path = parent_dir / 'results'
+    plt.figure(figure)
+    plt.savefig(result_folder_path / folder_name / f'{fig_name}.png')
 
 
 def create_run_result_folder(folder_name, folder_path):

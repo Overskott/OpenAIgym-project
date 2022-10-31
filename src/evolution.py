@@ -15,8 +15,8 @@ def random_binary_array(length: int):
 
 def get_parent_index(parent_fitness_array: np.ndarray):
     """ """
-    norm_fitness = normalize_array_squared(parent_fitness_array)
-    return roulette_wheel_selector(norm_fitness)
+    norm_fitness = normalize_array(parent_fitness_array)
+    return fitness_proportionate_selector(norm_fitness)
 
 
 def normalize_array(input_array: np.ndarray) -> np.ndarray:
@@ -27,7 +27,7 @@ def normalize_array_squared(input_array: np.ndarray) -> np.ndarray:
     return input_array**2/np.sum(input_array**2)
 
 
-def roulette_wheel_selector(selection_array: np.ndarray) -> int:
+def fitness_proportionate_selector(selection_array: np.ndarray) -> int:
     check = np.random.rand()
     prob = 0
 

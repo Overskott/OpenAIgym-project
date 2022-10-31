@@ -1,11 +1,11 @@
 {
   "evolution": {
-    "generations": 100,
-    "generation_size": 50,
-    "test_rounds": 5,
-    "crossover_rate": 0.6,
-    "mutation_rate": 0.3,
-    "termination_fitness": 340
+    "generations": 200,
+    "generation_size": 10,
+    "test_rounds": 2,
+    "crossover_rate": 0.4,
+    "mutation_rate": 0.1,
+    "termination_fitness": 300
   },
   "cellular_automata": {
     "ca_hood_size": 5,
