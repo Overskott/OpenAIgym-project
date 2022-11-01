@@ -48,6 +48,11 @@ for i in range(config.data['evolution']['generations']):
         fitness_list = [g.get_population_fitness() for g in generation_history]
 
         plt.plot(best_list)
+        plt.xlabel('Generations')
+        plt.ylabel('Fitness')
+        plt.title(label='NN Evolution',
+                  fontweight=10,
+                  pad='2.0')
         #plt.scatter(range(len(fitness_list)), fitness_list)
 
         fig.canvas.draw()
@@ -61,7 +66,7 @@ for i in range(config.data['evolution']['generations']):
 #write_to_file(generation_history[-1].population[-1].__str__())
 save_nn_results(generation_history[-1].population[-1].__str__(), fig)
 
-#plt.close(fig)
+
 env2 = gym.make("CartPole-v1", render_mode="human" )
 while True:
 

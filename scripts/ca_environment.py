@@ -71,7 +71,8 @@ save_figure(fig2, 'CA')
 
 env2 = gym.make("CartPole-v1", render_mode="human")
 
-
+average_score = 0
+runs = 0
 while True:
     try:
         max_steps = 500
@@ -90,5 +91,12 @@ while True:
                 break
 
         print(score)
+        average_score += score
+        runs += 1
     except KeyboardInterrupt:
         break
+
+
+
+
+save_ca_results(average_score/runs)

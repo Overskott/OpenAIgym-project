@@ -19,6 +19,5 @@ while True:
     print(binary_to_int(ca.rule))
     ca.run_time_evolution()
 
-
-    plt.imshow(ca.history, cmap='gray', interpolation='nearest')
+    plt.imshow(ca.history, cmap='gray')
     plt.show()
