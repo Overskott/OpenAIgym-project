@@ -92,7 +92,7 @@ def uniform_crossover(parent_1: np.ndarray, parent_2: np.ndarray):
 
 def generate_offspring_nn(parents: Generation):
     offspring = []
-    parents_fitness = np.asarray([parent.get_fitness() for parent in parents.population])
+    parents_fitness = np.asarray([parent.fitness for parent in parents.population])
     pop_size = config.data['evolution']['generation_size']
     xover_ratio = config.data['evolution']['crossover_rate']
     mutate_ratio = config.data['evolution']['mutation_rate']
@@ -209,7 +209,7 @@ def mutate_input_bias(index, parent, offspring):
 
 def generate_offspring_ca(parents: Generation):
     offspring = []
-    parents_fitness = np.asarray([parent.get_fitness() for parent in parents.population])
+    parents_fitness = np.asarray([parent.fitness for parent in parents.population])
     pop_size = config.data['evolution']['generation_size']
     xover_ratio = config.data['evolution']['crossover_rate']
     mutate_ratio = config.data['evolution']['mutation_rate']

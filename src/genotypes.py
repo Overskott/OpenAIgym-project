@@ -21,7 +21,7 @@ class Genotype(ABC):
         """Initialize the Genotype with 0 (lowest) fitness."""
         self.fitness = 0
 
-    def get_fitness(self) -> int:
+    def fitness(self) -> int:
         """Returns the fitness of the Genotype."""
         return self.fitness
 
@@ -147,26 +147,6 @@ class CellularAutomaton1D(Genotype):
         """ Clears the stored history list"""
         self.history = []
 
-    @DeprecationWarning
-    def naive_encoding(self, observations: np.ndarray):
-        """ A simple and inefficient way of encoding gym observations into the CA.
-
-            The observations given are encoded in the middle of the ca.
-
-            NOTE! This function is created for testing and research purpose, and will
-            not yield the best results.
-
-            Args:
-                observations (numpy.ndarray): An array with the four environment observations
-                in the OpenAI CartPole environment. The observations must be in binary value and
-                in this order:
-
-                [Cart position, Cart velocity, Pole angle, Pole angular velocity]
-        """
-        self.configuration = np.zeros(self.size, dtype='u4')
-        for i in range(len(observations)):
-            self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
-
     def encode_observations(self, observations):
         """ Most efficient observations encoding scheme.
 
@@ -193,7 +173,9 @@ class CellularAutomaton1D(Genotype):
         self.configuration = new_state
 
     def find_phenotype_fitness(self, environment: gym.Env, policy):
-        """ Tests the instance in the cartpole environment and updates its fitness score.
+        """ Tests the instance in the cartpole environment and updates its fitness score. Uses the
+            given policy to determine the action to take. Config parameter 'test_rounds' determines
+            the number of tests to run. Fitness is the average over all test runs.
 
             Args:
                 environment (gym.Env): Gym environment for the instance to be tested in.
@@ -288,6 +270,26 @@ class CellularAutomaton1D(Genotype):
             neighborhood += str(int(cell))
 
         return neighborhood
+
+    @DeprecationWarning
+    def naive_encoding(self, observations: np.ndarray):
+        """ A simple and inefficient way of encoding gym observations into the CA.
+
+            The observations given are encoded in the middle of the ca.
+
+            NOTE! This function is created for testing and research purpose, and will
+            not yield the best results.
+
+            Args:
+                observations (numpy.ndarray): An array with the four environment observations
+                in the OpenAI CartPole environment. The observations must be in binary value and
+                in this order:
+
+                [Cart position, Cart velocity, Pole angle, Pole angular velocity]
+        """
+        self.configuration = np.zeros(self.size, dtype='u4')
+        for i in range(len(observations)):
+            self.configuration[(self.size >> 1) + (i - len(observations))] = observations[i]
 
 
 class NeuralNetwork(Genotype):
@@ -401,7 +403,9 @@ class NeuralNetwork(Genotype):
         return np.float(output_value)
 
     def find_phenotype_fitness(self, environment: gym.Env, policy):
-        """ Tests the instance in the cartpole environment and updates its fitness score.
+        """ Tests the instance in the cartpole environment and updates its fitness score. Uses the
+            given policy to determine the action to take. Config parameter 'test_rounds' determines
+            the number of tests to run. Fitness is the average over all test runs.
 
                     Args:
                         environment (gym.Env): Gym environment for the instance to be tested in.

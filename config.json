@@ -1,7 +1,7 @@
 {
   "evolution": {
     "generations": 200,
-    "generation_size": 30,
+    "generation_size": 2,
     "test_rounds": 1,
     "crossover_rate": 0.7,
     "mutation_rate": 0.2,

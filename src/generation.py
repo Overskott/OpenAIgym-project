@@ -63,10 +63,10 @@ class Generation(object):
 
     def get_population_fitness(self):
         """ Return a list of each phenotype's fitness"""
-        return np.asarray([phenotype.get_fitness() for phenotype in self.population])
+        return np.asarray([phenotype.fitness for phenotype in self.population])
 
     def sort_population_by_fitness(self):
         """ Order the individuals in population from lowest to highest fitness"""
-        fitness_dict = {f: f.get_fitness() for f in self.population}
+        fitness_dict = {f: f.fitness for f in self.population}
         sorted_dict = sorted(fitness_dict.items(), key=lambda x: x[1])
         self.population = [c[0] for c in sorted_dict]

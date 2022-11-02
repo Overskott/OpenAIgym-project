@@ -1,8 +1,8 @@
-import src.policies as policies
+import gym
 from src.generation import Generation
 from src.utils import *
 from src.genotypes import *
-from src.policies import *
+import src.policies as policies
 import src.config as config
 import src.evolution as evolution
 
@@ -14,6 +14,7 @@ best_candidate = NeuralNetwork('0-0')
 next_gen = None
 target_fitness = config.data['evolution']['termination_fitness']
 
+# code for "Live" plotting
 plt.ion()
 fig = plt.figure()
 
@@ -26,70 +27,59 @@ for i in range(config.data['evolution']['generations']):
 
         for phenotype in generation.population:
             phenotype.find_phenotype_fitness(env, policies.nn_basic_encoding)
-            print(f"Fitness: {phenotype.get_fitness()}, "
-                  f"id: {phenotype.candidate_number}")
 
-        generation_history.append(generation)
         generation.sort_population_by_fitness()
-        print([g.get_fitness() for g in generation.population])
-        print([g.candidate_number for g in generation.population])
+        generation_history.append(generation)  # Save the generation
 
-        new_candidate = generation.population[-1]
+        new_candidate = generation.population[-1]  # The best candidate of the generation
+        best_list.append(new_candidate.fitness)
 
-        if new_candidate.get_fitness() > best_candidate.get_fitness():
+        if new_candidate.fitness > best_candidate.fitness:  # Update best candidate
             best_candidate = new_candidate
 
+        next_gen = evolution.generate_offspring_nn(generation)  # Generate next generation
 
-        fitnesses = np.asarray(generation.get_population_fitness())
-        print(f"Generation {i}: Best individual fitness: {generation[-1].get_fitness()}, "
-              f"id: {generation[-1].candidate_number}")
+        print(f"Generation {1 + i}: Best individual fitness: {new_candidate.fitness}, "
+              f"id: {new_candidate.candidate_number}")
 
-        best_list.append(fitnesses[-1])
-        fitness_list = [g.get_population_fitness() for g in generation_history]
-
-        plt.plot(best_list)
+        # Plot the best fitness for each iteration
+        plt.plot(best_list, color='blue')
         plt.xlabel('Generations')
         plt.ylabel('Fitness')
         plt.title(label='NN Evolution',
                   fontweight=10,
                   pad='2.0')
-        #plt.scatter(range(len(fitness_list)), fitness_list)
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        if fitnesses[-1] >= target_fitness:
+
+        if best_candidate.fitness > target_fitness:  # Termination condition
             break
-        next_gen = evolution.generate_offspring_nn(generation)
+
     except KeyboardInterrupt:
         break
 
-#write_to_file(generation_history[-1].population[-1].__str__())
-save_nn_results(generation_history[-1].population[-1].__str__(), fig)
 
-
-env2 = gym.make("CartPole-v1", render_mode="human" )
-while True:
-
+final_fitnesses = []
+for _ in range(50):
     try:
-        max_steps = 500
-        observation, _ = env2.reset()
-        score = 0
+        observation, _ = env.reset()
 
-        for i in range(max_steps):
+        best_candidate.find_phenotype_fitness(env, policies.nn_basic_encoding)
+        final_fitnesses.append(best_candidate.fitness)
 
-            action = nn_basic_encoding(observation, best_candidate)  # User-defined policy function
-            observation, reward, terminated, truncated, _ = env2.step(action)
-            score += reward
-
-            if terminated:
-                break
-            elif truncated:
-                break
-
-        print(score)
     except KeyboardInterrupt:
         break
-# environment.close() i in g.population] for g in generations])
+
+average_fitness = np.mean(final_fitnesses)
+
+save_nn_results(f"{generation_history[-1].population[-1].__str__()}\n"
+                f"\n{final_fitnesses}\n"
+                f"Average fitness over {len(final_fitnesses)} runs: {average_fitness}", fig)
+
+plt.close()
+env.close()
+print(f"Done!")
 
 
 
