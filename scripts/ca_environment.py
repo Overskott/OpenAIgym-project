@@ -1,3 +1,5 @@
+import time
+
 import gym
 import src.policies as policies
 from src.generation import Generation
@@ -19,6 +21,7 @@ target_fitness = config.data['evolution']['termination_fitness']
 plt.ion()
 fig1 = plt.figure()
 
+start = time.time()
 for i in range(config.data['evolution']['generations']):
 
     try:  # Handling user exit of the loop
@@ -62,8 +65,9 @@ for i in range(config.data['evolution']['generations']):
     except KeyboardInterrupt:
         break
 
+end= time.time()
 final_fitnesses = []
-
+print(f"Fetching results...")
 for _ in range(50):
     try:
         observation, _ = env.reset()
@@ -77,7 +81,8 @@ average_fitness = np.mean(final_fitnesses)
 
 save_ca_results(f"{generation_history[-1].population[-1].__str__()}\n"
                 f"\n{final_fitnesses}\n"
-                f"Average fitness over {len(final_fitnesses)} runs: {average_fitness}")
+                f"Average fitness over {len(final_fitnesses)} runs: {average_fitness}\n"
+                f"\nTime taken: {end - start}")
 save_figure(fig1, 'fitness')
 
 fig2 = plt.figure()

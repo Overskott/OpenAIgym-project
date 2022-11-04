@@ -56,6 +56,7 @@ class CellularAutomaton1D(Genotype):
             steps (int): Number of steps the CA will run.
             configuration (numpy.ndarray): The status of the CA i.e. which cells are 1 and which are 0.
         """
+
     def __init__(self,
                  candidate_number: str,
                  rule: np.ndarray = None,
@@ -102,7 +103,7 @@ class CellularAutomaton1D(Genotype):
             self.configuration = copy.deepcopy(configuration)
 
         if rule is None:
-            self.rule = np.random.randint(0, 2, 2**self.hood_size, dtype='u4')
+            self.rule = np.random.randint(0, 2, 2 ** self.hood_size, dtype='u4')
         else:
             self.rule = rule
 
@@ -112,8 +113,7 @@ class CellularAutomaton1D(Genotype):
                f"Neighborhood size: {self.hood_size}, Rule: {self.rule}\n" \
                f"\nParameters: \n" \
                f"{config.data['evolution']}\n" \
-               f"{config.data['cellular_automata']}\n" \
-
+               f"{config.data['cellular_automata']}\n"
 
     @property
     def configuration(self) -> np.ndarray:
@@ -198,9 +198,7 @@ class CellularAutomaton1D(Genotype):
                 elif truncated:
                     break
 
-            self.set_fitness(np.round(score/repeats))
-
-        environment.close()
+        self.set_fitness(np.round(score / repeats))
 
     def run_time_evolution(self):
         """ The complete time evolution of the CA. Updates configuration."""
@@ -305,6 +303,7 @@ class NeuralNetwork(Genotype):
             hidden_bias (numpy. ndarray): The hidden layer bias (dim(1, n)).
             output_weights (numpy.ndarray): weights between hidden layer and output layer (dim(n, 1)).
         """
+
     def __init__(self,
                  candidate_number: str,
                  input_weights: np.ndarray = None,
@@ -327,12 +326,14 @@ class NeuralNetwork(Genotype):
             self.input_weights = input_weights
 
         if input_bias is None:
-            self.input_bias = np.random.normal(-1, 1, (1, 4))
+            # self.input_bias = np.random.normal(-1, 1, (1, 4))
+            self.input_bias = np.zeros((1, 4))
         else:
             self.input_bias = input_bias
 
         if hidden_bias is None:
-            self.hidden_bias = np.random.normal(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+            # self.hidden_bias = np.random.normal(-1, 1, (1, config.data['neural_network']['hidden_layer_size']))
+            self.hidden_bias = np.zeros((1, config.data['neural_network']['hidden_layer_size']))
         else:
             self.hidden_bias = hidden_bias
 
@@ -352,8 +353,7 @@ class NeuralNetwork(Genotype):
                f"\nInput Weights:\n{utils.array_to_input_string(self.input_weights)}\n" \
                f"\nInput Bias:\n{utils.array_to_input_string(self.input_bias)}" \
                f"\nHidden Bias:\n{utils.array_to_input_string(self.hidden_bias)}\n" \
-               f"\nOutput_weights:\n{utils.array_to_input_string(self.output_weights)}" \
-
+               f"\nOutput_weights:\n{utils.array_to_input_string(self.output_weights)}"
 
     @property
     def input_weights(self) -> np.ndarray:
@@ -428,4 +428,4 @@ class NeuralNetwork(Genotype):
                 elif truncated:
                     break
 
-            self.set_fitness(np.round(score / repeats))
+        self.set_fitness(np.round(score / repeats))

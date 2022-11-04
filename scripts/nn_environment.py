@@ -1,3 +1,5 @@
+import time
+
 import gym
 from src.generation import Generation
 from src.utils import *
@@ -18,7 +20,7 @@ target_fitness = config.data['evolution']['termination_fitness']
 plt.ion()
 fig = plt.figure()
 
-
+start = time.time()
 for i in range(config.data['evolution']['generations']):
     try:
         observation, _ = env.reset()
@@ -59,9 +61,11 @@ for i in range(config.data['evolution']['generations']):
     except KeyboardInterrupt:
         break
 
+end = time.time()
 
 final_fitnesses = []
-for _ in range(50):
+print(f"Fetching results...")
+for _ in range(100):
     try:
         observation, _ = env.reset()
 
@@ -73,9 +77,10 @@ for _ in range(50):
 
 average_fitness = np.mean(final_fitnesses)
 
-save_nn_results(f"{generation_history[-1].population[-1].__str__()}\n"
+save_nn_results(f"{best_candidate.__str__()}\n"
                 f"\n{final_fitnesses}\n"
-                f"Average fitness over {len(final_fitnesses)} runs: {average_fitness}", fig)
+                f"Average fitness over {len(final_fitnesses)} runs: {average_fitness}\n"
+                f"\nEvolution time: {end - start}", fig)
 
 plt.close()
 env.close()

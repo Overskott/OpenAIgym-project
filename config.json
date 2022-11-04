@@ -1,11 +1,11 @@
 {
   "evolution": {
     "generations": 200,
-    "generation_size": 2,
-    "test_rounds": 1,
-    "crossover_rate": 0.7,
-    "mutation_rate": 0.2,
-    "termination_fitness": 340
+    "generation_size": 100,
+    "test_rounds": 3,
+    "crossover_rate": 0.3,
+    "mutation_rate": 0.6,
+    "termination_fitness": 600
   },
   "cellular_automata": {
     "ca_hood_size": 5,
@@ -16,6 +16,6 @@
     "observation_encoding_size": 10
   },
   "neural_network": {
-    "hidden_layer_size": 10
+    "hidden_layer_size": 15
   }
 }
